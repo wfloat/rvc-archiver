@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "build-archieve",
+            "name": "build-archive",
             "skipFiles": [
                 "<node_internals>/**"
             ],
