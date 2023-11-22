@@ -1,8 +1,11 @@
-// src/index.ts
+import https from "https";
+import fs from "fs";
+import "dotenv/config";
 
-console.log('test')
-const blah = (yo: string) => {
-  console.log('yo')
-}
+import { testing } from "./util/parse-google-sheet.js";
 
-blah('yo')
+const realtimeArchiveUrl = process.env.REALTIME_ARCHIVE_URL as string;
+// console.log(realtimeArchiveUrl);
+// let ans = await fetchGoogleSheet(realtimeArchiveUrl);
+let ans = testing();
+// console.log(ans);
