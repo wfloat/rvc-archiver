@@ -5,7 +5,6 @@
     "target": "ES2022",
     "strict": true,
     "sourceMap": true,
-    "rootDir": "src",
     "outDir": "dist",
   },
   "include": ["src/**/*"],
