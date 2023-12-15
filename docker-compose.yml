@@ -1,0 +1,18 @@
+  version: "3.8"
+  services:
+    rvc:
+      image: mitchsayre/rvc:latest
+      container_name: rvc
+      volumes:
+        - ./shared/weights:/app/assets/weights
+        - ./shared:/app/shared
+        # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+      ports:
+        - 7865:7865
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                count: 1
+                capabilities: [ gpu ]
