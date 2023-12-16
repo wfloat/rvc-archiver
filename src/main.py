@@ -18,7 +18,7 @@ def main():
 
     # Optimize model parameters
     study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=5, show_progress_bar=True)
+    study.optimize(objective, n_trials=681, show_progress_bar=True)
 
 main()
 

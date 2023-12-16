@@ -16,3 +16,11 @@
               - driver: nvidia
                 count: 1
                 capabilities: [ gpu ]
+
+    nisqa:
+      image: nisqa
+      container_name: nisqa
+      volumes:
+        - ./shared:/app/shared
+      ports:
+        - 5239:5239

@@ -1,9 +1,11 @@
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Literal
 import requests
 import json
 from gradio_client import Client
+import os
+from util.helpers import to_relative_path
 
 pitch_extraction_method = Literal["pm", "harvest", "crepe", "rmvpe"]
 
@@ -67,5 +69,9 @@ def infer_convert(client: Client, model_weight_filename: str, model_index_path: 
     )
 
     audio_output_path = result[1]
+    audio_output_path = to_relative_path(
+        original_path=audio_output_path, 
+        base_dir="shared"
+    )
     return audio_output_path
 
