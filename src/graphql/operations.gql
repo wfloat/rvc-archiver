@@ -1,0 +1,7 @@
+mutation CreateAIHubVoiceModel {
+  createAIHubVoiceModel(input: { downloadCount: 5, filename: "mitch", version: "RVC v2" }) {
+    downloadCount
+    filename
+    id
+  }
+}
