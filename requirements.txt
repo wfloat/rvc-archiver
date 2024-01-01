@@ -3,3 +3,4 @@ optuna==3.5.0
 opencv-python==4.6.0.66
 openai==1.6.0
 pytube==15.0.0
+sgqlc==16.3

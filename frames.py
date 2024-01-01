@@ -4,11 +4,11 @@ from typing import Optional, List, Dict, Any
 import cv2
 import random
 
-SILENCE_THRESHOLD = 2 # in hundredths of a second
-SEGMENT_MINIMUM_LENGTH = 50 # in hundredths of a second
-SEGMENT_FRAMES_SAMPLING_WIDTH = 50 # in hundredths of a second
-SEGMENT_FRAMES_COUNT = 5 # Amount of frames to pull from the video for each sample
-RANDOM_SEGMENT_SELECTION_COUNT = 20
+SILENCE_THRESHOLD = 10 # in hundredths of a second
+SEGMENT_MINIMUM_LENGTH = 100 # in hundredths of a second
+SEGMENT_FRAMES_SAMPLING_WIDTH = 75 # in hundredths of a second
+SEGMENT_FRAMES_COUNT = 4 # Amount of frames to pull from the video for each sample
+SEGMENT_RANDOM_SELECTION_COUNT = 20
 
 @dataclass
 class SpeechSegment:
@@ -67,16 +67,18 @@ def save_video_frames(SpeechSegment: SpeechSegment, frequencies_count: int, vide
 
     for index, frame_sampling_position in enumerate(frame_sampling_positions):
         frame_position_normalized = frame_sampling_position / frequencies_count
+
+        audio_frame_index = int(frame_sampling_position)
     
         frame_index = int(frame_position_normalized * video_total_frames)
         video_capture.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
         ret, frame = video_capture.read()
         if ret:
-            frame_filename = f'{output_dir}/{frame_index}.jpg'
+            frame_filename = f'{output_dir}/{audio_frame_index}.jpg'
             cv2.imwrite(frame_filename, frame)
             print(f"Saved {frame_filename}")
         else:
-            print(f"Error reading frame at position {frame_index}")
+            print(f"Error reading frame at position {audio_frame_index}")
 
 def main():
     video_path = 'video-144p.mp4'
@@ -86,7 +88,7 @@ def main():
     frequencies_count = len(frequencies)
     segments = segment_speech_audio(frequencies)
 
-    segments = random.sample(segments, RANDOM_SEGMENT_SELECTION_COUNT)
+    segments = random.sample(segments, SEGMENT_RANDOM_SELECTION_COUNT)
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():

@@ -17,6 +17,11 @@ curl -L -o shared/f0/D32k.pth      https://huggingface.co/lj1995/VoiceConversion
      -L -o shared/f0/f0G48k.pth    https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/pretrained_v2/f0G48k.pth
 ```
 
+### Code Generation
+```bash
+python3 src/graphql/codegen.py
+```
+
 ## TODO:
 - Add the f0 curve as an inference param for Optuna
 - Try optimizing different RVC models

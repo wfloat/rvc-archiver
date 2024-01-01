@@ -1,24 +1,33 @@
 import os
 import json
 import requests
+import optuna
 from util.google_sheet import get_sheet_json, get_sheet_rows
 from util.optimize_params import objective
-import optuna
+from util.youtube import search_youtube
+
+VIDEO_LENGTH_MINIMUM = 240
 
 def main():
     # Load model metadata from spreadsheet
-    # doc_id = os.environ.get('DOC_ID')
-    # sheet_id = os.environ.get('SHEET_ID')
+    doc_id = os.environ.get('DOC_ID')
+    sheet_id = os.environ.get('SHEET_ID')
 
-    # # sheet_data = get_sheet_json(doc_id, sheet_id)
-    # sheet_data = json.load(open('./sheet.json'))
+    # sheet_data = get_sheet_json(doc_id, sheet_id)
+    sheet_data = json.load(open('./sheet.json'))
 
-    # sheet_rows = get_sheet_rows(sheet_data)
+    sheet_rows = get_sheet_rows(sheet_data)
     # print(sheet_rows)
 
+    video_results = search_youtube("Interview with Ice Spice")
+    video_results = [x for x in video_results if x.duration >= VIDEO_LENGTH_MINIMUM]
+    video_results = sorted(video_results, key=lambda x: x.view_count, reverse=True)
+    print()
+
+
     # Optimize model parameters
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=681, show_progress_bar=True)
+    # study = optuna.create_study(direction='maximize')
+    # study.optimize(objective, n_trials=1, show_progress_bar=True)
 
 main()
 

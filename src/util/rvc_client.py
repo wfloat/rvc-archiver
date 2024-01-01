@@ -55,7 +55,7 @@ def infer_convert(client: Client, model_weight_filename: str, model_index_path: 
     result = client.predict(
         0,	# float (numeric value between 0 and 2333) in 'Select Speaker/Singer ID:' Slider component
         audio_input_file,	# str  in 'Enter the path of the audio file to be processed (default is the correct format example):' Textbox component
-        0,	# float  in 'Transpose (integer, number of semitones, raise by an octave: 12, lower by an octave: -12):' Number component
+        params.transpose_pitch,	# float  in 'Transpose (integer, number of semitones, raise by an octave: 12, lower by an octave: -12):' Number component
         f0_curve_path,	# str (filepath on your computer (or URL) of file) in 'F0 curve file (optional). One pitch per line. Replaces the default F0 and pitch modulation:' File component
         params.pitch_extraction_method,	# str  in 'Select the pitch extraction algorithm ('pm': faster extraction but lower-quality speech; 'harvest': better bass but extremely slow; 'crepe': better quality but GPU intensive), 'rmvpe': best quality, and little GPU requirement' Radio component
         model_index_path,	# str  in 'Path to the feature index file. Leave blank to use the selected result from the dropdown:' Textbox component
