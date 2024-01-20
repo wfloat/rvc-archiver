@@ -1,16 +1,4 @@
 {
   "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "build-archive",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/dist/index.js",
-
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-    //   "preLaunchTask": "tsc: build - tsconfig.json",
-    //   "console": "none"
-    }
-  ]
+  "configurations": []
 }
