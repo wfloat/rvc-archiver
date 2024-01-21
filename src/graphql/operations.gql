@@ -1,7 +1,11 @@
-mutation CreateAIHubVoiceModel {
-  createAIHubVoiceModel(input: { downloadCount: 5, filename: "mitch", version: "RVC v2" }) {
-    downloadCount
-    filename
+mutation CreateAIHubVoiceModel2($input: CreateAIHubVoiceModelInput!) {
+  createAIHubVoiceModel(input: $input) {
     id
+    name
+    version
+    filename
+    downloadCount
+    derivedModelId
+    creatorText
   }
 }
