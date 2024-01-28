@@ -17,3 +17,29 @@ mutation CreateVoiceModelBackupUrl($input: CreateVoiceModelBackupUrlInput!) {
     voiceModelId
   }
 }
+
+query AIHubVoiceModels($after: String) {
+  AIHubVoiceModels(first: 100, minDownloadCount: 75, after: $after) {
+    pageInfo {
+      endCursor
+      hasNextPage
+      hasPreviousPage
+      startCursor
+    }
+    edges {
+      node {
+        downloadCount
+        filename
+        name
+        # backupUrls(first: 20) {
+        #   edges {
+        #     node {
+        #       url
+        #       id
+        #     }
+        #   }
+        # }
+      }
+    }
+  }
+}

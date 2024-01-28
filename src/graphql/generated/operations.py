@@ -55,5 +55,32 @@ class Mutation:
     create_voice_model_backup_url = mutation_create_voice_model_backup_url()
 
 
+def query_aihub_voice_models():
+    _op = sgqlc.operation.Operation(
+        _schema_root.query_type,
+        name="AIHubVoiceModels",
+        variables=dict(after=sgqlc.types.Arg(_schema.String)),
+    )
+    _op_aihub_voice_models = _op.aihub_voice_models(
+        first=100, min_download_count=75, after=sgqlc.types.Variable("after")
+    )
+    _op_aihub_voice_models_page_info = _op_aihub_voice_models.page_info()
+    _op_aihub_voice_models_page_info.end_cursor()
+    _op_aihub_voice_models_page_info.has_next_page()
+    _op_aihub_voice_models_page_info.has_previous_page()
+    _op_aihub_voice_models_page_info.start_cursor()
+    _op_aihub_voice_models_edges = _op_aihub_voice_models.edges()
+    _op_aihub_voice_models_edges_node = _op_aihub_voice_models_edges.node()
+    _op_aihub_voice_models_edges_node.download_count()
+    _op_aihub_voice_models_edges_node.filename()
+    _op_aihub_voice_models_edges_node.name()
+    return _op
+
+
+class Query:
+    aihub_voice_models = query_aihub_voice_models()
+
+
 class Operations:
     mutation = Mutation
+    query = Query
