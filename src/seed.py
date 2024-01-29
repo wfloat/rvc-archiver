@@ -56,6 +56,11 @@ def populate_tables_aihub_voice_model_and_voice_model_backup_url(
 
         filename = remove_carriage_returns(sheet_row.filename)
         model_name = remove_carriage_returns(sheet_row.model_name)
+        if model_name == "":
+            model_name = None
+        if filename == "":
+            continue
+
         input_data = {
             "downloadCount": sheet_row.download_counter,
             "filename": filename,
@@ -79,14 +84,16 @@ def populate_tables_aihub_voice_model_and_voice_model_backup_url(
 
         if sheet_row.url:
             url_standardized = standardize_url(sheet_row.url)
+            if url_standardized == "":
+                url_standardized = None
 
             input_data = {"url": url_standardized, "voiceModelId": model_id}
             res = endpoint(
                 query=create_voice_model_backup_url, variables={"input": input_data}
             )
             errors = res.get("errors")
-            if errors:
-                print(errors)
+            # if errors:
+            #     print(errors)
 
         for i in range(1, 20):
             alt_url_field = f"alt_url{i}"
@@ -94,6 +101,8 @@ def populate_tables_aihub_voice_model_and_voice_model_backup_url(
 
             if alt_url_value:
                 alt_url_standardized = standardize_url(alt_url_value)
+                if alt_url_standardized == "":
+                    alt_url_standardized = None
 
                 input_data = {
                     "url": alt_url_standardized,
@@ -119,19 +128,11 @@ def main():
 
     # populate_tables_aihub_voice_model_and_voice_model_backup_url(sheet_rows)
 
-    client = OpenAI()
-
-    output_dir = "profiles"
-
-    client = OpenAI(
-        # This is the default and can be omitted
-        api_key=OPENAI_API_KEY,
-    )
-
     aihub_voice_models_query = Operations.query.aihub_voice_models
     page_end_cursor = None
     has_next_page = True
-    i = 0
+
+    aihub_voice_models = []
 
     while has_next_page:
         res = endpoint(
@@ -145,33 +146,45 @@ def main():
         aihub_voice_model_connection = res["data"]["AIHubVoiceModels"]
         page_end_cursor = aihub_voice_model_connection["pageInfo"]["endCursor"]
         has_next_page = aihub_voice_model_connection["pageInfo"]["hasNextPage"]
-        print(i)
-        i = i + 1
 
-    print(page_end_cursor)
+        for edge in aihub_voice_model_connection["edges"]:
+            aihub_voice_models.append(edge["node"])
 
-    # for sheet_row in tqdm(sheet_rows):
+    output_dir = "profiles"
 
-    # chat_completion = client.chat.completions.create(
-    #     model="gpt-4-1106-preview",
-    #     response_format={"type": "json_object"},
-    #     messages=[
-    #         {
-    #             "role": "user",
-    #             "content": "Given the following data VoiceModelData = { model_name: None, weights_name: 'MLP05RainbowDash', } I want you to make your best guess at filling in the following JSON of who this voice model represents. Note that the model name and weights name can contain meta data including but not limited to epochs/creation date/author name/dataset source that may or may not be directly useful to identifying who the voice model represents. The voice can be a fictional character or a real person. ProfileOrCharacter = { confidence: float # score 0.0 to 1.0 fameLevel: float # score 0.0 to 1.0 fictional: bool name: str gender: str # male or female relevantTags: str[] # if not None: minimum 5/maximum 10 accent: str nativeLanguage: str modelTrainedOnEnglishProbability: float } I need you to output only the filled in object",
-    #         }
-    #     ],
-    # )
+    client = OpenAI(
+        # This is the default and can be omitted
+        api_key=OPENAI_API_KEY,
+    )
 
-    # md5hash = "oiafonasfnalafeuia"
+    for aihub_voice_model in tqdm(aihub_voice_models):
+        weights_name = f"'{aihub_voice_model['filename']}'"
+        model_name = aihub_voice_model["name"]
 
-    # response = json.loads(chat_completion.choices[0].message.content)
+        if model_name == None:
+            model_name = "None"
+        else:
+            model_name = f"'{model_name}'"
 
-    # voice_profile_path = f"{output_dir}/{md5hash}.json"
-    # with open(voice_profile_path, "w") as file:
-    #     json.dump(response, file)
+        prompt = f"Given the following data VoiceModelData = {{ model_name: {model_name}, weights_name: {weights_name}, }} I want you to make your best guess at filling in the following JSON of who this voice model represents. Note that the model name and weights name can contain metadata including but not limited to epochs/creation date/author name/dataset source that may or may not be directly useful to identifying who the voice model represents. The voice can be a fictional character or a real person. ProfileOrCharacter = {{ confidence: float # score 0.0 to 1.0 \n fameLevel: float # score 0.0 to 1.0 \n fictional: bool \n name: str \n gender: str # male or female \n relevantTags: str[] # if not None: minimum 5/maximum 10 \n accent: str \n nativeLanguage: str \n modelTrainedOnEnglishProbability: float }} I need you to output only the filled in object. If identity is unknown, set fields to null"
 
-    # print(response)
+        chat_completion = client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            response_format={"type": "json_object"},
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+        )
+
+        response = json.loads(chat_completion.choices[0].message.content)
+
+        md5_hash = aihub_voice_model["checksumMD5ForWeights"]
+        voice_profile_path = f"{output_dir}/{md5_hash}.json"
+        with open(voice_profile_path, "w") as file:
+            json.dump(response, file)
 
 
 if __name__ == "__main__":
