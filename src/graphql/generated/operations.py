@@ -74,6 +74,7 @@ def query_aihub_voice_models():
     _op_aihub_voice_models_edges_node.download_count()
     _op_aihub_voice_models_edges_node.filename()
     _op_aihub_voice_models_edges_node.name()
+    _op_aihub_voice_models_edges_node.checksum_md5_for_weights()
     return _op
 
 

@@ -180,7 +180,7 @@ class UpdateVoiceModelInput(sgqlc.types.Input):
 ########################################################################
 class AIHubVoiceModel(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('backup_urls', 'creator_text', 'derived_model', 'derived_model_id', 'download_count', 'filename', 'id', 'name', 'version')
+    __field_names__ = ('backup_urls', 'checksum_md5_for_weights', 'creator_text', 'derived_model', 'derived_model_id', 'download_count', 'filename', 'id', 'name', 'version')
     backup_urls = sgqlc.types.Field(sgqlc.types.non_null('AIHubVoiceModelBackupUrlsConnection'), graphql_name='backupUrls', args=sgqlc.types.ArgDict((
         ('after', sgqlc.types.Arg(String, graphql_name='after', default=None)),
         ('before', sgqlc.types.Arg(String, graphql_name='before', default=None)),
@@ -195,6 +195,8 @@ class AIHubVoiceModel(sgqlc.types.Type):
     * `first` (`Int`)None
     * `last` (`Int`)None
     '''
+
+    checksum_md5_for_weights = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumMD5ForWeights')
 
     creator_text = sgqlc.types.Field(String, graphql_name='creatorText')
 
