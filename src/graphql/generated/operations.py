@@ -95,19 +95,19 @@ def query_aihub_voice_models():
     _op_aihub_voice_models_edges_node.filename()
     _op_aihub_voice_models_edges_node.name()
     _op_aihub_voice_models_edges_node.checksum_md5_for_weights()
-    _op_aihub_voice_models_edges_node_profile = (
-        _op_aihub_voice_models_edges_node.profile()
+    _op_aihub_voice_models_edges_node_inferred_profile = (
+        _op_aihub_voice_models_edges_node.inferred_profile()
     )
-    _op_aihub_voice_models_edges_node_profile.accent()
-    _op_aihub_voice_models_edges_node_profile.confidence()
-    _op_aihub_voice_models_edges_node_profile.fictional()
-    _op_aihub_voice_models_edges_node_profile.gender()
-    _op_aihub_voice_models_edges_node_profile.id()
-    _op_aihub_voice_models_edges_node_profile.model_trained_on_english_probability()
-    _op_aihub_voice_models_edges_node_profile.name()
-    _op_aihub_voice_models_edges_node_profile.native_language()
-    _op_aihub_voice_models_edges_node_profile.relevant_tags()
-    _op_aihub_voice_models_edges_node_profile.voice_model_id()
+    _op_aihub_voice_models_edges_node_inferred_profile.accent()
+    _op_aihub_voice_models_edges_node_inferred_profile.confidence()
+    _op_aihub_voice_models_edges_node_inferred_profile.fictional()
+    _op_aihub_voice_models_edges_node_inferred_profile.gender()
+    _op_aihub_voice_models_edges_node_inferred_profile.id()
+    _op_aihub_voice_models_edges_node_inferred_profile.model_trained_on_english_probability()
+    _op_aihub_voice_models_edges_node_inferred_profile.name()
+    _op_aihub_voice_models_edges_node_inferred_profile.native_language()
+    _op_aihub_voice_models_edges_node_inferred_profile.relevant_tags()
+    _op_aihub_voice_models_edges_node_inferred_profile.voice_model_id()
     return _op
 
 

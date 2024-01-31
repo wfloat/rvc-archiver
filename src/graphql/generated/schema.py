@@ -228,7 +228,7 @@ class UpdateVoiceModelProfileInput(sgqlc.types.Input):
 ########################################################################
 class AIHubVoiceModel(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('backup_urls', 'checksum_md5_for_weights', 'creator_text', 'derived_model', 'derived_model_id', 'download_count', 'filename', 'id', 'name', 'profile', 'version')
+    __field_names__ = ('backup_urls', 'checksum_md5_for_weights', 'creator_text', 'derived_model', 'derived_model_id', 'download_count', 'filename', 'id', 'inferred_profile', 'name', 'version')
     backup_urls = sgqlc.types.Field(sgqlc.types.non_null('AIHubVoiceModelBackupUrlsConnection'), graphql_name='backupUrls', args=sgqlc.types.ArgDict((
         ('after', sgqlc.types.Arg(String, graphql_name='after', default=None)),
         ('before', sgqlc.types.Arg(String, graphql_name='before', default=None)),
@@ -258,9 +258,9 @@ class AIHubVoiceModel(sgqlc.types.Type):
 
     id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
 
-    name = sgqlc.types.Field(String, graphql_name='name')
+    inferred_profile = sgqlc.types.Field('VoiceModelProfile', graphql_name='inferredProfile')
 
-    profile = sgqlc.types.Field('VoiceModelProfile', graphql_name='profile')
+    name = sgqlc.types.Field(String, graphql_name='name')
 
     version = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='version')
 

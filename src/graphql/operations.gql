@@ -40,7 +40,7 @@ query AIHubVoiceModels($after: String) {
         filename
         name
         checksumMD5ForWeights
-        profile {
+        inferredProfile {
           accent
           confidence
           fictional
