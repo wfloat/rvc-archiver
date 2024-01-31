@@ -13,6 +13,10 @@ from openai import OpenAI
 import json
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
+import zipfile
+import requests
+import random
+
 
 load_dotenv()
 
@@ -59,6 +63,24 @@ def standardize_url(url: str) -> str:
     path = parsed_url.path
     query = "&".join(sorted(parsed_url.query.split("&")))
     return urlunparse((scheme, netloc, path, "", query, ""))
+
+
+def safe_unzip(zip_path, extract_to_folder, size_limit):
+    total_size = 0
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        for file_info in zip_ref.infolist():
+            total_size += file_info.file_size
+            if total_size > size_limit:
+                raise Exception("Size limit exceeded, aborting unzipping.")
+            zip_ref.extract(file_info, extract_to_folder)
+
+
+def download_file(url, filename):
+    response = requests.get(url)
+    response.raise_for_status()
+
+    with open(filename, "wb") as f:
+        f.write(response.content)
 
 
 def populate_aihub_voice_model_and_voice_model_backup_url_tables(
@@ -245,6 +267,69 @@ def populate_voice_model_profile_table(profiles_dir: str):
                             print(errors)
 
 
+def populate_voice_model_table_and_weights_using_voice_model_profiles():
+    aihub_voice_models_query = Operations.query.aihub_voice_models
+    page_end_cursor = None
+    has_next_page = True
+
+    aihub_voice_models = []
+
+    while has_next_page:
+        res = endpoint(
+            query=aihub_voice_models_query, variables={"after": page_end_cursor}
+        )
+
+        errors = res.get("errors")
+        if errors:
+            continue
+
+        aihub_voice_model_connection = res["data"]["AIHubVoiceModels"]
+        page_end_cursor = aihub_voice_model_connection["pageInfo"]["endCursor"]
+        has_next_page = aihub_voice_model_connection["pageInfo"]["hasNextPage"]
+
+        for edge in aihub_voice_model_connection["edges"]:
+            aihub_voice_models.append(edge["node"])
+
+    # random.shuffle(aihub_voice_models)
+    for aihub_voice_model in tqdm(aihub_voice_models):
+        inferred_profile = aihub_voice_model["inferredProfile"]
+        if not inferred_profile:
+            continue
+
+        if (
+            inferred_profile["nativeLanguage"] != "English"
+            or inferred_profile["accent"] != "American"
+        ):
+            potentially_dubbed = "anime" in [
+                element.lower() for element in inferred_profile["relevantTags"]
+            ]
+            if not potentially_dubbed:
+                continue
+
+        backup_urls = []
+        for edge in aihub_voice_model["backupUrls"]["edges"]:
+            backup_urls.append(edge["node"]["url"])
+        if len(backup_urls) == 0:
+            continue
+        backup_urls = sorted(backup_urls, key=lambda url: "huggingface" not in url)
+
+        contains_huggingface = any("huggingface" in url for url in backup_urls)
+        if not contains_huggingface:
+            continue
+        try:
+            download_file(
+                backup_urls[0],
+                f"model-zips/{aihub_voice_model['checksumMD5ForWeights']}.zip",
+            )
+        except Exception as e:
+            print(
+                f"Error downloading weights for {inferred_profile['name']} MD5: {aihub_voice_model['checksumMD5ForWeights']}\n{e}"
+            )
+
+    # weights_name = f"'{aihub_voice_model['filename']}'"
+    # model_name = aihub_voice_model["name"]
+
+
 def main():
     # # sheet_data = get_sheet_json(doc_id, sheet_id)
     # sheet_data = json.load(open("./sheet.json"))
@@ -252,8 +337,8 @@ def main():
 
     # populate_aihub_voice_model_and_voice_model_backup_url_tables(sheet_rows)
     # generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_DIR)
-    populate_voice_model_profile_table(VOICE_MODEL_PROFILES_OUTPUT_DIR)
-    # populate_voice_model_table_using_voice_model_profiles()
+    # populate_voice_model_profile_table(VOICE_MODEL_PROFILES_OUTPUT_DIR)
+    populate_voice_model_table_and_weights_using_voice_model_profiles()
 
 
 if __name__ == "__main__":

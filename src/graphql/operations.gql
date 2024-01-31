@@ -52,6 +52,15 @@ query AIHubVoiceModels($after: String) {
           relevantTags
           voiceModelId
         }
+        backupUrls(first: 20) {
+          edges {
+            node {
+              id
+              url
+              voiceModelId
+            }
+          }
+        }
       }
     }
   }

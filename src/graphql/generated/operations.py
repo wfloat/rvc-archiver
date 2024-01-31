@@ -108,6 +108,18 @@ def query_aihub_voice_models():
     _op_aihub_voice_models_edges_node_inferred_profile.native_language()
     _op_aihub_voice_models_edges_node_inferred_profile.relevant_tags()
     _op_aihub_voice_models_edges_node_inferred_profile.voice_model_id()
+    _op_aihub_voice_models_edges_node_backup_urls = (
+        _op_aihub_voice_models_edges_node.backup_urls(first=20)
+    )
+    _op_aihub_voice_models_edges_node_backup_urls_edges = (
+        _op_aihub_voice_models_edges_node_backup_urls.edges()
+    )
+    _op_aihub_voice_models_edges_node_backup_urls_edges_node = (
+        _op_aihub_voice_models_edges_node_backup_urls_edges.node()
+    )
+    _op_aihub_voice_models_edges_node_backup_urls_edges_node.id()
+    _op_aihub_voice_models_edges_node_backup_urls_edges_node.url()
+    _op_aihub_voice_models_edges_node_backup_urls_edges_node.voice_model_id()
     return _op
 
 
