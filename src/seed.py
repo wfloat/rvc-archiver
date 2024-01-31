@@ -15,7 +15,9 @@ from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 import zipfile
 import requests
-import random
+import shutil
+
+# import random
 
 
 load_dotenv()
@@ -29,6 +31,7 @@ WFLOAT_API_URL = os.getenv("WFLOAT_API_URL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 VOICE_MODEL_PROFILES_OUTPUT_DIR = "profiles"
+VOICE_MODEL_WEIGHTS_OUTPUT_DIR = "model-zips"
 
 endpoint = HTTPEndpoint(WFLOAT_API_URL)
 
@@ -267,7 +270,7 @@ def populate_voice_model_profile_table(profiles_dir: str):
                             print(errors)
 
 
-def populate_voice_model_table_and_weights_using_voice_model_profiles():
+def download_voice_model_weights(weights_output_dir: str):
     aihub_voice_models_query = Operations.query.aihub_voice_models
     page_end_cursor = None
     has_next_page = True
@@ -319,15 +322,53 @@ def populate_voice_model_table_and_weights_using_voice_model_profiles():
         try:
             download_file(
                 backup_urls[0],
-                f"model-zips/{aihub_voice_model['checksumMD5ForWeights']}.zip",
+                f"{weights_output_dir}/{aihub_voice_model['checksumMD5ForWeights']}.zip",
             )
         except Exception as e:
             print(
                 f"Error downloading weights for {inferred_profile['name']} MD5: {aihub_voice_model['checksumMD5ForWeights']}\n{e}"
             )
 
-    # weights_name = f"'{aihub_voice_model['filename']}'"
-    # model_name = aihub_voice_model["name"]
+
+def build_voice_model_weights_folder_structure(
+    weights_in_dir: str, weights_structured_dir: str
+):
+    tmp_dir = "./tmp"
+    zip_size_limit = 786432000  # in bytes
+
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
+    weights_dir = os.path.join(weights_structured_dir, "weights")
+    logs_dir = os.path.join(weights_structured_dir, "logs")
+    if not os.path.exists(weights_dir):
+        os.makedirs(weights_dir)
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+
+    for zip_file in tqdm(os.listdir(weights_in_dir)):
+        if zip_file.endswith(".zip"):
+            zip_path = os.path.join(weights_in_dir, zip_file)
+            try:
+                safe_unzip(zip_path, tmp_dir, zip_size_limit)
+            except Exception as e:
+                print(f"Error unzipping {zip_path}\n{e}")
+                continue
+
+            # Now check the tmp directory and potentially one folder deep for the required files
+            for root, dirs, files in os.walk(tmp_dir):
+                for file in files:
+                    if file.endswith(".pth"):
+                        shutil.move(os.path.join(root, file), weights_dir)
+                    elif file.endswith(".index"):
+                        shutil.move(os.path.join(root, file), logs_dir)
+
+                # If files are expected to be one folder deep, we break after the first iteration
+                # This can be adjusted based on the exact requirements
+                break
+
+            # Cleanup tmp directory after processing each zip file
+            shutil.rmtree(tmp_dir)
+            os.makedirs(tmp_dir)  # Recreate for the next iteration
 
 
 def main():
@@ -338,7 +379,8 @@ def main():
     # populate_aihub_voice_model_and_voice_model_backup_url_tables(sheet_rows)
     # generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_DIR)
     # populate_voice_model_profile_table(VOICE_MODEL_PROFILES_OUTPUT_DIR)
-    populate_voice_model_table_and_weights_using_voice_model_profiles()
+    # download_voice_model_weights(VOICE_MODEL_WEIGHTS_OUTPUT_DIR)
+    build_voice_model_weights_folder_structure(VOICE_MODEL_WEIGHTS_OUTPUT_DIR, "shared")
 
 
 if __name__ == "__main__":
