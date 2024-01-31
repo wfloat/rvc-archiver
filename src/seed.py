@@ -23,6 +23,8 @@ GOOGLE_SHEET_ID = os.environ.get("SHEET_ID")
 WFLOAT_API_URL = os.getenv("WFLOAT_API_URL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+VOICE_MODEL_PROFILES_OUTPUT_PATH = "profiles"
+
 endpoint = HTTPEndpoint(WFLOAT_API_URL)
 
 
@@ -121,7 +123,7 @@ def populate_tables_aihub_voice_model_and_voice_model_backup_url(
                 #     print(errors)
 
 
-def generate_voice_model_profiles_with_openai():
+def generate_voice_model_profiles_with_openai(output_path: str):
     aihub_voice_models_query = Operations.query.aihub_voice_models
     page_end_cursor = None
     has_next_page = True
@@ -143,8 +145,6 @@ def generate_voice_model_profiles_with_openai():
 
         for edge in aihub_voice_model_connection["edges"]:
             aihub_voice_models.append(edge["node"])
-
-    output_dir = "profiles"
 
     client = OpenAI(
         # This is the default and can be omitted
@@ -176,7 +176,7 @@ def generate_voice_model_profiles_with_openai():
         response = json.loads(chat_completion.choices[0].message.content)
 
         md5_hash = aihub_voice_model["checksumMD5ForWeights"]
-        voice_profile_path = f"{output_dir}/{md5_hash}.json"
+        voice_profile_path = f"{output_path}/{md5_hash}.json"
         with open(voice_profile_path, "w") as file:
             json.dump(response, file)
 
@@ -187,7 +187,7 @@ def main():
     sheet_rows = get_sheet_rows(sheet_data)
 
     populate_tables_aihub_voice_model_and_voice_model_backup_url(sheet_rows)
-    generate_voice_model_profiles_with_openai()
+    generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_PATH)
 
 
 if __name__ == "__main__":
