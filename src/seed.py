@@ -13,6 +13,24 @@ from openai import OpenAI
 import json
 from typing import Optional, List, Dict, Any
 
+load_dotenv()
+
+
+# Load model metadata from spreadsheet
+GOOGLE_DOC_ID = os.environ.get("DOC_ID")
+GOOGLE_SHEET_ID = os.environ.get("SHEET_ID")
+
+WFLOAT_API_URL = os.getenv("WFLOAT_API_URL")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+endpoint = HTTPEndpoint(WFLOAT_API_URL)
+
+
+def remove_carriage_returns(input_str: str) -> str:
+    if input_str is None:
+        return ""
+    return input_str.replace("\r", "")
+
 
 def standardize_url(url: str) -> str:
     parsed_url = urlparse(url)
@@ -25,20 +43,6 @@ def standardize_url(url: str) -> str:
     path = parsed_url.path
     query = "&".join(sorted(parsed_url.query.split("&")))
     return urlunparse((scheme, netloc, path, "", query, ""))
-
-
-def remove_carriage_returns(input_str: str) -> str:
-    if input_str is None:
-        return ""
-    return input_str.replace("\r", "")
-
-
-load_dotenv()
-
-WFLOAT_API_URL = os.getenv("WFLOAT_API_URL")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-endpoint = HTTPEndpoint(WFLOAT_API_URL)
 
 
 def populate_tables_aihub_voice_model_and_voice_model_backup_url(
@@ -117,17 +121,7 @@ def populate_tables_aihub_voice_model_and_voice_model_backup_url(
                 #     print(errors)
 
 
-def main():
-    # # Load model metadata from spreadsheet
-    # doc_id = os.environ.get("DOC_ID")
-    # sheet_id = os.environ.get("SHEET_ID")
-
-    # # sheet_data = get_sheet_json(doc_id, sheet_id)
-    # sheet_data = json.load(open("./sheet.json"))
-    # sheet_rows = get_sheet_rows(sheet_data)
-
-    # populate_tables_aihub_voice_model_and_voice_model_backup_url(sheet_rows)
-
+def generate_voice_model_profiles_with_openai():
     aihub_voice_models_query = Operations.query.aihub_voice_models
     page_end_cursor = None
     has_next_page = True
@@ -185,6 +179,15 @@ def main():
         voice_profile_path = f"{output_dir}/{md5_hash}.json"
         with open(voice_profile_path, "w") as file:
             json.dump(response, file)
+
+
+def main():
+    # sheet_data = get_sheet_json(doc_id, sheet_id)
+    sheet_data = json.load(open("./sheet.json"))
+    sheet_rows = get_sheet_rows(sheet_data)
+
+    populate_tables_aihub_voice_model_and_voice_model_backup_url(sheet_rows)
+    generate_voice_model_profiles_with_openai()
 
 
 if __name__ == "__main__":
