@@ -50,9 +50,29 @@ def mutation_create_voice_model_backup_url():
     return _op
 
 
+def mutation_create_voice_model_profile():
+    _op = sgqlc.operation.Operation(
+        _schema_root.mutation_type,
+        name="CreateVoiceModelProfile",
+        variables=dict(
+            input=sgqlc.types.Arg(
+                sgqlc.types.non_null(_schema.CreateVoiceModelProfileInput)
+            )
+        ),
+    )
+    _op_create_voice_model_profile = _op.create_voice_model_profile(
+        input=sgqlc.types.Variable("input")
+    )
+    _op_create_voice_model_profile.id()
+    _op_create_voice_model_profile.name()
+    _op_create_voice_model_profile.voice_model_id()
+    return _op
+
+
 class Mutation:
     create_aihub_voice_model = mutation_create_aihub_voice_model()
     create_voice_model_backup_url = mutation_create_voice_model_backup_url()
+    create_voice_model_profile = mutation_create_voice_model_profile()
 
 
 def query_aihub_voice_models():
@@ -75,10 +95,46 @@ def query_aihub_voice_models():
     _op_aihub_voice_models_edges_node.filename()
     _op_aihub_voice_models_edges_node.name()
     _op_aihub_voice_models_edges_node.checksum_md5_for_weights()
+    _op_aihub_voice_models_edges_node_profile = (
+        _op_aihub_voice_models_edges_node.profile()
+    )
+    _op_aihub_voice_models_edges_node_profile.accent()
+    _op_aihub_voice_models_edges_node_profile.confidence()
+    _op_aihub_voice_models_edges_node_profile.fictional()
+    _op_aihub_voice_models_edges_node_profile.gender()
+    _op_aihub_voice_models_edges_node_profile.id()
+    _op_aihub_voice_models_edges_node_profile.model_trained_on_english_probability()
+    _op_aihub_voice_models_edges_node_profile.name()
+    _op_aihub_voice_models_edges_node_profile.native_language()
+    _op_aihub_voice_models_edges_node_profile.relevant_tags()
+    _op_aihub_voice_models_edges_node_profile.voice_model_id()
+    return _op
+
+
+def query_aihub_voice_model_using_checksum_md5_for_weights():
+    _op = sgqlc.operation.Operation(
+        _schema_root.query_type,
+        name="AIHubVoiceModelUsingChecksumMD5ForWeights",
+        variables=dict(checksumMD5ForWeights=sgqlc.types.Arg(_schema.String)),
+    )
+    _op_aihub_voice_model = _op.aihub_voice_model(
+        checksum_md5_for_weights=sgqlc.types.Variable("checksumMD5ForWeights")
+    )
+    _op_aihub_voice_model.creator_text()
+    _op_aihub_voice_model.download_count()
+    _op_aihub_voice_model.id()
+    _op_aihub_voice_model.filename()
+    _op_aihub_voice_model.name()
+    _op_aihub_voice_model.version()
+    _op_aihub_voice_model.derived_model_id()
+    _op_aihub_voice_model.checksum_md5_for_weights()
     return _op
 
 
 class Query:
+    aihub_voice_model_using_checksum_md5_for_weights = (
+        query_aihub_voice_model_using_checksum_md5_for_weights()
+    )
     aihub_voice_models = query_aihub_voice_models()
 
 

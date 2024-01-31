@@ -18,6 +18,14 @@ mutation CreateVoiceModelBackupUrl($input: CreateVoiceModelBackupUrlInput!) {
   }
 }
 
+mutation CreateVoiceModelProfile($input: CreateVoiceModelProfileInput!) {
+  createVoiceModelProfile(input: $input) {
+    id
+    name
+    voiceModelId
+  }
+}
+
 query AIHubVoiceModels($after: String) {
   AIHubVoiceModels(first: 100, minDownloadCount: 75, after: $after) {
     pageInfo {
@@ -32,15 +40,32 @@ query AIHubVoiceModels($after: String) {
         filename
         name
         checksumMD5ForWeights
-        # backupUrls(first: 20) {
-        #   edges {
-        #     node {
-        #       url
-        #       id
-        #     }
-        #   }
-        # }
+        profile {
+          accent
+          confidence
+          fictional
+          gender
+          id
+          modelTrainedOnEnglishProbability
+          name
+          nativeLanguage
+          relevantTags
+          voiceModelId
+        }
       }
     }
+  }
+}
+
+query AIHubVoiceModelUsingChecksumMD5ForWeights($checksumMD5ForWeights: String) {
+  AIHubVoiceModel(checksumMD5ForWeights: $checksumMD5ForWeights) {
+    creatorText
+    downloadCount
+    id
+    filename
+    name
+    version
+    derivedModelId
+    checksumMD5ForWeights
   }
 }

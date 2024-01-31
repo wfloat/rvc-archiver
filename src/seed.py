@@ -12,6 +12,7 @@ from urllib.parse import urlparse, urlunparse
 from openai import OpenAI
 import json
 from typing import Optional, List, Dict, Any
+from dataclasses import dataclass
 
 load_dotenv()
 
@@ -23,9 +24,22 @@ GOOGLE_SHEET_ID = os.environ.get("SHEET_ID")
 WFLOAT_API_URL = os.getenv("WFLOAT_API_URL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-VOICE_MODEL_PROFILES_OUTPUT_PATH = "profiles"
+VOICE_MODEL_PROFILES_OUTPUT_DIR = "profiles"
 
 endpoint = HTTPEndpoint(WFLOAT_API_URL)
+
+
+@dataclass
+class VoiceModelProfile:
+    confidence: Optional[float] = None
+    fameLevel: Optional[float] = None
+    fictional: Optional[bool] = None
+    name: Optional[str] = None
+    gender: Optional[str] = None
+    relevantTags: Optional[List[str]] = None
+    accent: Optional[str] = None
+    nativeLanguage: Optional[str] = None
+    modelTrainedOnEnglishProbability: Optional[float] = None
 
 
 def remove_carriage_returns(input_str: str) -> str:
@@ -47,7 +61,7 @@ def standardize_url(url: str) -> str:
     return urlunparse((scheme, netloc, path, "", query, ""))
 
 
-def populate_tables_aihub_voice_model_and_voice_model_backup_url(
+def populate_aihub_voice_model_and_voice_model_backup_url_tables(
     sheet_rows: List[AIHubSheetRow],
 ):
     create_aihub_voice_model = Operations.mutation.create_aihub_voice_model
@@ -123,7 +137,7 @@ def populate_tables_aihub_voice_model_and_voice_model_backup_url(
                 #     print(errors)
 
 
-def generate_voice_model_profiles_with_openai(output_path: str):
+def generate_voice_model_profiles_with_openai(output_dir: str):
     aihub_voice_models_query = Operations.query.aihub_voice_models
     page_end_cursor = None
     has_next_page = True
@@ -176,18 +190,70 @@ def generate_voice_model_profiles_with_openai(output_path: str):
         response = json.loads(chat_completion.choices[0].message.content)
 
         md5_hash = aihub_voice_model["checksumMD5ForWeights"]
-        voice_profile_path = f"{output_path}/{md5_hash}.json"
+        voice_profile_path = f"{output_dir}/{md5_hash}.json"
         with open(voice_profile_path, "w") as file:
             json.dump(response, file)
 
 
-def main():
-    # sheet_data = get_sheet_json(doc_id, sheet_id)
-    sheet_data = json.load(open("./sheet.json"))
-    sheet_rows = get_sheet_rows(sheet_data)
+def populate_voice_model_profile_table(profiles_dir: str):
+    aihub_voice_model_using_checksum_md5_for_weights_query = (
+        Operations.query.aihub_voice_model_using_checksum_md5_for_weights
+    )
 
-    populate_tables_aihub_voice_model_and_voice_model_backup_url(sheet_rows)
-    generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_PATH)
+    create_voice_model_profile = Operations.mutation.create_voice_model_profile
+
+    for filename in tqdm(os.listdir(profiles_dir)):
+        if filename.endswith(".json"):
+            with open(os.path.join(profiles_dir, filename), "r") as file:
+                data = json.load(file)
+                voice_model_profile = VoiceModelProfile(**data)
+
+                all_fields_set = all(
+                    getattr(voice_model_profile, field) is not None
+                    for field in voice_model_profile.__dict__
+                )
+                if all_fields_set:
+                    res = endpoint(
+                        query=aihub_voice_model_using_checksum_md5_for_weights_query,
+                        variables={"checksumMD5ForWeights": filename.rstrip(".json")},
+                    )
+                    errors = res.get("errors")
+                    if errors:
+                        print(errors)
+
+                    if not errors:
+                        aihub_voice_model = res["data"]["AIHubVoiceModel"]
+
+                        input_data = {
+                            "confidence": voice_model_profile.confidence,
+                            # "fameLevel": voice_model_profile.fameLevel, # TODO: Consider this to the API
+                            "fictional": voice_model_profile.fictional,
+                            "name": voice_model_profile.name,
+                            "gender": voice_model_profile.gender,
+                            "relevantTags": voice_model_profile.relevantTags,
+                            "accent": voice_model_profile.accent,
+                            "nativeLanguage": voice_model_profile.nativeLanguage,
+                            "modelTrainedOnEnglishProbability": voice_model_profile.modelTrainedOnEnglishProbability,
+                            "voiceModelId": aihub_voice_model["id"],
+                        }
+                        res = endpoint(
+                            query=create_voice_model_profile,
+                            variables={"input": input_data},
+                        )
+                        errors = res.get("errors")
+                        if errors:
+                            print(errors)
+
+
+def main():
+    # # sheet_data = get_sheet_json(doc_id, sheet_id)
+    # sheet_data = json.load(open("./sheet.json"))
+    # sheet_rows = get_sheet_rows(sheet_data)
+
+    # populate_aihub_voice_model_and_voice_model_backup_url_tables(sheet_rows)
+    # generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_DIR)
+    populate_voice_model_profile_table(VOICE_MODEL_PROFILES_OUTPUT_DIR)
+    # populate_voice_model_table_using_voice_model_profiles()
 
 
 if __name__ == "__main__":

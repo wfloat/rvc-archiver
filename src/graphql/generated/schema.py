@@ -97,6 +97,29 @@ class CreateVoiceModelInput(sgqlc.types.Input):
 
 
 
+class CreateVoiceModelProfileInput(sgqlc.types.Input):
+    __schema__ = schema
+    __field_names__ = ('accent', 'confidence', 'fictional', 'gender', 'model_trained_on_english_probability', 'name', 'native_language', 'relevant_tags', 'voice_model_id')
+    accent = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='accent')
+
+    confidence = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='confidence')
+
+    fictional = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name='fictional')
+
+    gender = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='gender')
+
+    model_trained_on_english_probability = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='modelTrainedOnEnglishProbability')
+
+    name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='name')
+
+    native_language = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='nativeLanguage')
+
+    relevant_tags = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name='relevantTags')
+
+    voice_model_id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='voiceModelId')
+
+
+
 class UpdateAIHubVoiceModelInput(sgqlc.types.Input):
     __schema__ = schema
     __field_names__ = ('checksum_md5_for_weights', 'creator_text', 'derived_model_id', 'download_count', 'filename', 'id', 'name', 'version')
@@ -174,13 +197,38 @@ class UpdateVoiceModelInput(sgqlc.types.Input):
 
 
 
+class UpdateVoiceModelProfileInput(sgqlc.types.Input):
+    __schema__ = schema
+    __field_names__ = ('accent', 'confidence', 'fictional', 'gender', 'id', 'model_trained_on_english_probability', 'name', 'native_language', 'relevant_tags', 'voice_model_id')
+    accent = sgqlc.types.Field(String, graphql_name='accent')
+
+    confidence = sgqlc.types.Field(Float, graphql_name='confidence')
+
+    fictional = sgqlc.types.Field(Boolean, graphql_name='fictional')
+
+    gender = sgqlc.types.Field(String, graphql_name='gender')
+
+    id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
+
+    model_trained_on_english_probability = sgqlc.types.Field(Float, graphql_name='modelTrainedOnEnglishProbability')
+
+    name = sgqlc.types.Field(String, graphql_name='name')
+
+    native_language = sgqlc.types.Field(String, graphql_name='nativeLanguage')
+
+    relevant_tags = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name='relevantTags')
+
+    voice_model_id = sgqlc.types.Field(ID, graphql_name='voiceModelId')
+
+
+
 
 ########################################################################
 # Output Objects and Interfaces
 ########################################################################
 class AIHubVoiceModel(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('backup_urls', 'checksum_md5_for_weights', 'creator_text', 'derived_model', 'derived_model_id', 'download_count', 'filename', 'id', 'name', 'version')
+    __field_names__ = ('backup_urls', 'checksum_md5_for_weights', 'creator_text', 'derived_model', 'derived_model_id', 'download_count', 'filename', 'id', 'name', 'profile', 'version')
     backup_urls = sgqlc.types.Field(sgqlc.types.non_null('AIHubVoiceModelBackupUrlsConnection'), graphql_name='backupUrls', args=sgqlc.types.ArgDict((
         ('after', sgqlc.types.Arg(String, graphql_name='after', default=None)),
         ('before', sgqlc.types.Arg(String, graphql_name='before', default=None)),
@@ -211,6 +259,8 @@ class AIHubVoiceModel(sgqlc.types.Type):
     id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
 
     name = sgqlc.types.Field(String, graphql_name='name')
+
+    profile = sgqlc.types.Field('VoiceModelProfile', graphql_name='profile')
 
     version = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='version')
 
@@ -254,7 +304,7 @@ class AIHubVoiceModelsEdge(sgqlc.types.Type):
 
 class Mutation(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('create_aihub_voice_model', 'create_text_to_speech', 'create_voice_model', 'create_voice_model_backup_url', 'create_voice_model_config', 'update_aihub_voice_model', 'update_text_to_speech', 'update_voice_model', 'update_voice_model_backup_url', 'update_voice_model_config')
+    __field_names__ = ('create_aihub_voice_model', 'create_text_to_speech', 'create_voice_model', 'create_voice_model_backup_url', 'create_voice_model_config', 'create_voice_model_profile', 'update_aihub_voice_model', 'update_text_to_speech', 'update_voice_model', 'update_voice_model_backup_url', 'update_voice_model_config', 'update_voice_model_profile')
     create_aihub_voice_model = sgqlc.types.Field(sgqlc.types.non_null(AIHubVoiceModel), graphql_name='createAIHubVoiceModel', args=sgqlc.types.ArgDict((
         ('input', sgqlc.types.Arg(sgqlc.types.non_null(CreateAIHubVoiceModelInput), graphql_name='input', default=None)),
 ))
@@ -298,6 +348,15 @@ class Mutation(sgqlc.types.Type):
     '''Arguments:
 
     * `input` (`CreateVoiceModelConfigInput!`)None
+    '''
+
+    create_voice_model_profile = sgqlc.types.Field(sgqlc.types.non_null('VoiceModelProfile'), graphql_name='createVoiceModelProfile', args=sgqlc.types.ArgDict((
+        ('input', sgqlc.types.Arg(sgqlc.types.non_null(CreateVoiceModelProfileInput), graphql_name='input', default=None)),
+))
+    )
+    '''Arguments:
+
+    * `input` (`CreateVoiceModelProfileInput!`)None
     '''
 
     update_aihub_voice_model = sgqlc.types.Field(sgqlc.types.non_null(AIHubVoiceModel), graphql_name='updateAIHubVoiceModel', args=sgqlc.types.ArgDict((
@@ -345,6 +404,15 @@ class Mutation(sgqlc.types.Type):
     * `input` (`UpdateVoiceModelConfigInput!`)None
     '''
 
+    update_voice_model_profile = sgqlc.types.Field(sgqlc.types.non_null('VoiceModelProfile'), graphql_name='updateVoiceModelProfile', args=sgqlc.types.ArgDict((
+        ('input', sgqlc.types.Arg(sgqlc.types.non_null(UpdateVoiceModelProfileInput), graphql_name='input', default=None)),
+))
+    )
+    '''Arguments:
+
+    * `input` (`UpdateVoiceModelProfileInput!`)None
+    '''
+
 
 
 class PageInfo(sgqlc.types.Type):
@@ -362,14 +430,16 @@ class PageInfo(sgqlc.types.Type):
 
 class Query(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('aihub_voice_model', 'aihub_voice_models', 'text_to_speech', 'text_to_speeches', 'voice_model', 'voice_model_backup_url', 'voice_model_backup_urls', 'voice_model_config', 'voice_model_configs', 'voice_models')
+    __field_names__ = ('aihub_voice_model', 'aihub_voice_models', 'text_to_speech', 'text_to_speeches', 'voice_model', 'voice_model_backup_url', 'voice_model_backup_urls', 'voice_model_config', 'voice_model_configs', 'voice_model_profile', 'voice_model_profiles', 'voice_models')
     aihub_voice_model = sgqlc.types.Field(sgqlc.types.non_null('AIHubVoiceModel'), graphql_name='AIHubVoiceModel', args=sgqlc.types.ArgDict((
-        ('id', sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name='id', default=None)),
+        ('checksum_md5_for_weights', sgqlc.types.Arg(String, graphql_name='checksumMD5ForWeights', default=None)),
+        ('id', sgqlc.types.Arg(ID, graphql_name='id', default=None)),
 ))
     )
     '''Arguments:
 
-    * `id` (`ID!`)None
+    * `checksum_md5_for_weights` (`String`)None
+    * `id` (`ID`)None
     '''
 
     aihub_voice_models = sgqlc.types.Field(sgqlc.types.non_null(AIHubVoiceModelsConnection), graphql_name='AIHubVoiceModels', args=sgqlc.types.ArgDict((
@@ -456,6 +526,30 @@ class Query(sgqlc.types.Type):
     '''
 
     voice_model_configs = sgqlc.types.Field(sgqlc.types.non_null('VoiceModelConfigsConnection'), graphql_name='VoiceModelConfigs', args=sgqlc.types.ArgDict((
+        ('after', sgqlc.types.Arg(String, graphql_name='after', default=None)),
+        ('before', sgqlc.types.Arg(String, graphql_name='before', default=None)),
+        ('first', sgqlc.types.Arg(Int, graphql_name='first', default=None)),
+        ('last', sgqlc.types.Arg(Int, graphql_name='last', default=None)),
+))
+    )
+    '''Arguments:
+
+    * `after` (`String`)None
+    * `before` (`String`)None
+    * `first` (`Int`)None
+    * `last` (`Int`)None
+    '''
+
+    voice_model_profile = sgqlc.types.Field(sgqlc.types.non_null('VoiceModelProfile'), graphql_name='VoiceModelProfile', args=sgqlc.types.ArgDict((
+        ('id', sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name='id', default=None)),
+))
+    )
+    '''Arguments:
+
+    * `id` (`ID!`)None
+    '''
+
+    voice_model_profiles = sgqlc.types.Field(sgqlc.types.non_null('VoiceModelProfilesConnection'), graphql_name='VoiceModelProfiles', args=sgqlc.types.ArgDict((
         ('after', sgqlc.types.Arg(String, graphql_name='after', default=None)),
         ('before', sgqlc.types.Arg(String, graphql_name='before', default=None)),
         ('first', sgqlc.types.Arg(Int, graphql_name='first', default=None)),
@@ -619,6 +713,51 @@ class VoiceModelConfigsEdge(sgqlc.types.Type):
     cursor = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='cursor')
 
     node = sgqlc.types.Field(sgqlc.types.non_null(VoiceModelConfig), graphql_name='node')
+
+
+
+class VoiceModelProfile(sgqlc.types.Type):
+    __schema__ = schema
+    __field_names__ = ('accent', 'confidence', 'fictional', 'gender', 'id', 'model_trained_on_english_probability', 'name', 'native_language', 'relevant_tags', 'voice_model', 'voice_model_id')
+    accent = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='accent')
+
+    confidence = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='confidence')
+
+    fictional = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name='fictional')
+
+    gender = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='gender')
+
+    id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
+
+    model_trained_on_english_probability = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='modelTrainedOnEnglishProbability')
+
+    name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='name')
+
+    native_language = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='nativeLanguage')
+
+    relevant_tags = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name='relevantTags')
+
+    voice_model = sgqlc.types.Field(sgqlc.types.non_null(AIHubVoiceModel), graphql_name='voiceModel')
+
+    voice_model_id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='voiceModelId')
+
+
+
+class VoiceModelProfilesConnection(sgqlc.types.relay.Connection):
+    __schema__ = schema
+    __field_names__ = ('edges', 'page_info')
+    edges = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of('VoiceModelProfilesEdge')), graphql_name='edges')
+
+    page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name='pageInfo')
+
+
+
+class VoiceModelProfilesEdge(sgqlc.types.Type):
+    __schema__ = schema
+    __field_names__ = ('cursor', 'node')
+    cursor = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='cursor')
+
+    node = sgqlc.types.Field(sgqlc.types.non_null(VoiceModelProfile), graphql_name='node')
 
 
 
