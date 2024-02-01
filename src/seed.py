@@ -345,11 +345,16 @@ def download_voice_model_weights(weights_output_dir: str):
             )
 
 
-def build_voice_model_weights_folder_structure(
+def populate_voice_model_table_and_build_weights_folder_structure(
     weights_in_dir: str, weights_structured_dir: str
 ):
     tmp_dir = "./tmp"
     zip_size_limit = 786432000  # in bytes
+    aihub_voice_model_using_checksum_md5_for_weights_query = (
+        Operations.query.aihub_voice_model_using_checksum_md5_for_weights
+    )
+    create_voice_model = Operations.mutation.create_voice_model
+    update_aihub_voice_model = Operations.mutation.update_aihub_voice_model
 
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
@@ -371,28 +376,102 @@ def build_voice_model_weights_folder_structure(
 
             # Now check the tmp directory and potentially one folder deep for the required files
             for root, dirs, files in os.walk(tmp_dir):
-                md5_hash = None
-                sha256_hash = None
+                md5_weights_file_hash = None
+                md5_added_file_hash = None
+                sha256_weights_file_hash = None
+                sha256_added_file_hash = None
+                weights_file_size = None
+                added_file_size = None
 
                 for file in files:
                     if file.endswith(".pth"):
-                        md5_hash = get_md5(os.path.join(root, file))
-                        if md5_hash != zip_file.rstrip(".zip"):
+                        weights_file_path = os.path.join(root, file)
+                        md5_weights_file_hash = get_md5(weights_file_path)
+                        sha256_weights_file_hash = get_sha256(weights_file_path)
+                        weights_file_size = os.path.getsize(weights_file_path)
+
+                        if md5_weights_file_hash != zip_file.rstrip(".zip"):
                             break
 
-                        sha256_hash = get_sha256(os.path.join(root, file))
                         shutil.move(
-                            os.path.join(root, file),
-                            os.path.join(weights_dir, f"{sha256_hash}.pth"),
+                            weights_file_path,
+                            os.path.join(
+                                weights_dir, f"{sha256_weights_file_hash}.pth"
+                            ),
                         )
 
-                if sha256_hash:
+                if (
+                    sha256_weights_file_hash
+                    and md5_weights_file_hash == zip_file.rstrip(".zip")
+                ):
                     for file in files:
                         if file.endswith(".index"):
+                            added_file_path = os.path.join(root, file)
+                            md5_added_file_hash = get_md5(added_file_path)
+                            sha256_added_file_hash = get_sha256(added_file_path)
+                            added_file_size = os.path.getsize(added_file_path)
+
                             shutil.move(
-                                os.path.join(root, file),
-                                os.path.join(logs_dir, f"{sha256_hash}.index"),
+                                added_file_path,
+                                os.path.join(
+                                    logs_dir, f"{sha256_weights_file_hash}.index"
+                                ),
                             )
+
+                            res = endpoint(
+                                query=aihub_voice_model_using_checksum_md5_for_weights_query,
+                                variables={
+                                    "checksumMD5ForWeights": md5_weights_file_hash
+                                },
+                            )
+                            errors = res.get("errors")
+                            if errors:
+                                print()
+                            if not errors:
+                                aihub_voice_model = res["data"]["AIHubVoiceModel"]
+                                voice_model_name = aihub_voice_model["inferredProfile"][
+                                    "name"
+                                ]
+
+                                input_data = {
+                                    "checksumMD5ForAdded": md5_added_file_hash,
+                                    "checksumMD5ForWeights": md5_weights_file_hash,
+                                    "checksumSHA256ForAdded": sha256_added_file_hash,
+                                    "checksumSHA256ForWeights": sha256_weights_file_hash,
+                                    "filesizeForWeights": weights_file_size,
+                                    "filesizeForAdded": added_file_size,
+                                    "hidden": True,
+                                    "name": voice_model_name,
+                                    "processed": False,
+                                }
+
+                                res = endpoint(
+                                    query=create_voice_model,
+                                    variables={"input": input_data},
+                                )
+
+                                errors = res.get("errors")
+                                if errors:
+                                    print()
+
+                                # Update AIHubVoiceModel record with derivedModelId
+                                if not errors:
+                                    voice_model = res["data"]["createVoiceModel"]
+
+                                    input_data = {
+                                        "id": aihub_voice_model["id"],
+                                        "derivedModelId": voice_model["id"],
+                                    }
+                                    res = endpoint(
+                                        query=update_aihub_voice_model,
+                                        variables={"input": input_data},
+                                    )
+
+                                    errors = res.get("errors")
+                                    if errors:
+                                        print()
+
+                            break
 
             # Cleanup tmp directory after processing each zip file
             shutil.rmtree(tmp_dir)
@@ -408,7 +487,9 @@ def main():
     # generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_DIR)
     # populate_voice_model_profile_table(VOICE_MODEL_PROFILES_OUTPUT_DIR)
     # download_voice_model_weights(VOICE_MODEL_WEIGHTS_OUTPUT_DIR)
-    build_voice_model_weights_folder_structure(VOICE_MODEL_WEIGHTS_OUTPUT_DIR, "shared")
+    populate_voice_model_table_and_build_weights_folder_structure(
+        VOICE_MODEL_WEIGHTS_OUTPUT_DIR, "shared"
+    )
 
 
 if __name__ == "__main__":

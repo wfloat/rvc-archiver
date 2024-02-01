@@ -26,6 +26,34 @@ mutation CreateVoiceModelProfile($input: CreateVoiceModelProfileInput!) {
   }
 }
 
+mutation CreateVoiceModel($input: CreateVoiceModelInput!) {
+  createVoiceModel(input: $input) {
+    checksumMD5ForAdded
+    checksumMD5ForWeights
+    checksumSHA256ForAdded
+    checksumSHA256ForWeights
+    filesizeForWeights
+    filesizeForAdded
+    hidden
+    id
+    name
+    processed
+  }
+}
+
+mutation UpdateAIHubVoiceModel($input: UpdateAIHubVoiceModelInput!) {
+  updateAIHubVoiceModel(input: $input) {
+    checksumMD5ForWeights
+    creatorText
+    derivedModelId
+    downloadCount
+    filename
+    id
+    name
+    version
+  }
+}
+
 query AIHubVoiceModels($after: String) {
   AIHubVoiceModels(first: 100, minDownloadCount: 75, after: $after) {
     pageInfo {
@@ -76,5 +104,17 @@ query AIHubVoiceModelUsingChecksumMD5ForWeights($checksumMD5ForWeights: String) 
     version
     derivedModelId
     checksumMD5ForWeights
+    inferredProfile {
+      accent
+      confidence
+      fictional
+      gender
+      id
+      modelTrainedOnEnglishProbability
+      name
+      nativeLanguage
+      relevantTags
+      voiceModelId
+    }
   }
 }

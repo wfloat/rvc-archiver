@@ -69,10 +69,58 @@ def mutation_create_voice_model_profile():
     return _op
 
 
+def mutation_create_voice_model():
+    _op = sgqlc.operation.Operation(
+        _schema_root.mutation_type,
+        name="CreateVoiceModel",
+        variables=dict(
+            input=sgqlc.types.Arg(sgqlc.types.non_null(_schema.CreateVoiceModelInput))
+        ),
+    )
+    _op_create_voice_model = _op.create_voice_model(input=sgqlc.types.Variable("input"))
+    _op_create_voice_model.checksum_md5_for_added()
+    _op_create_voice_model.checksum_md5_for_weights()
+    _op_create_voice_model.checksum_sha256_for_added()
+    _op_create_voice_model.checksum_sha256_for_weights()
+    _op_create_voice_model.filesize_for_weights()
+    _op_create_voice_model.filesize_for_added()
+    _op_create_voice_model.hidden()
+    _op_create_voice_model.id()
+    _op_create_voice_model.name()
+    _op_create_voice_model.processed()
+    return _op
+
+
+def mutation_update_aihub_voice_model():
+    _op = sgqlc.operation.Operation(
+        _schema_root.mutation_type,
+        name="UpdateAIHubVoiceModel",
+        variables=dict(
+            input=sgqlc.types.Arg(
+                sgqlc.types.non_null(_schema.UpdateAIHubVoiceModelInput)
+            )
+        ),
+    )
+    _op_update_aihub_voice_model = _op.update_aihub_voice_model(
+        input=sgqlc.types.Variable("input")
+    )
+    _op_update_aihub_voice_model.checksum_md5_for_weights()
+    _op_update_aihub_voice_model.creator_text()
+    _op_update_aihub_voice_model.derived_model_id()
+    _op_update_aihub_voice_model.download_count()
+    _op_update_aihub_voice_model.filename()
+    _op_update_aihub_voice_model.id()
+    _op_update_aihub_voice_model.name()
+    _op_update_aihub_voice_model.version()
+    return _op
+
+
 class Mutation:
     create_aihub_voice_model = mutation_create_aihub_voice_model()
+    create_voice_model = mutation_create_voice_model()
     create_voice_model_backup_url = mutation_create_voice_model_backup_url()
     create_voice_model_profile = mutation_create_voice_model_profile()
+    update_aihub_voice_model = mutation_update_aihub_voice_model()
 
 
 def query_aihub_voice_models():
@@ -140,6 +188,17 @@ def query_aihub_voice_model_using_checksum_md5_for_weights():
     _op_aihub_voice_model.version()
     _op_aihub_voice_model.derived_model_id()
     _op_aihub_voice_model.checksum_md5_for_weights()
+    _op_aihub_voice_model_inferred_profile = _op_aihub_voice_model.inferred_profile()
+    _op_aihub_voice_model_inferred_profile.accent()
+    _op_aihub_voice_model_inferred_profile.confidence()
+    _op_aihub_voice_model_inferred_profile.fictional()
+    _op_aihub_voice_model_inferred_profile.gender()
+    _op_aihub_voice_model_inferred_profile.id()
+    _op_aihub_voice_model_inferred_profile.model_trained_on_english_probability()
+    _op_aihub_voice_model_inferred_profile.name()
+    _op_aihub_voice_model_inferred_profile.native_language()
+    _op_aihub_voice_model_inferred_profile.relevant_tags()
+    _op_aihub_voice_model_inferred_profile.voice_model_id()
     return _op
 
 

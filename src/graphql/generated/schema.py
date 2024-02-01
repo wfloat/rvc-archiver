@@ -71,14 +71,28 @@ class CreateVoiceModelBackupUrlInput(sgqlc.types.Input):
 
 class CreateVoiceModelConfigInput(sgqlc.types.Input):
     __schema__ = schema
-    __field_names__ = ('voice_model_id',)
+    __field_names__ = ('artifact_protection', 'audio_resampling', 'filter_radius', 'pitch_extraction_method', 'search_feature_ratio', 'transpose_pitch', 'voice_model_id', 'volume_envelope_scaling')
+    artifact_protection = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='artifactProtection')
+
+    audio_resampling = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='audioResampling')
+
+    filter_radius = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filterRadius')
+
+    pitch_extraction_method = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='pitchExtractionMethod')
+
+    search_feature_ratio = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='searchFeatureRatio')
+
+    transpose_pitch = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='transposePitch')
+
     voice_model_id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='voiceModelId')
+
+    volume_envelope_scaling = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='volumeEnvelopeScaling')
 
 
 
 class CreateVoiceModelInput(sgqlc.types.Input):
     __schema__ = schema
-    __field_names__ = ('checksum_md5_for_added', 'checksum_md5_for_weights', 'checksum_sha256_for_added', 'checksum_sha256_for_weights', 'filesize', 'hidden', 'name', 'processed')
+    __field_names__ = ('checksum_md5_for_added', 'checksum_md5_for_weights', 'checksum_sha256_for_added', 'checksum_sha256_for_weights', 'filesize_for_added', 'filesize_for_weights', 'hidden', 'name', 'processed')
     checksum_md5_for_added = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumMD5ForAdded')
 
     checksum_md5_for_weights = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumMD5ForWeights')
@@ -87,7 +101,9 @@ class CreateVoiceModelInput(sgqlc.types.Input):
 
     checksum_sha256_for_weights = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumSHA256ForWeights')
 
-    filesize = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filesize')
+    filesize_for_added = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filesizeForAdded')
+
+    filesize_for_weights = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filesizeForWeights')
 
     hidden = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name='hidden')
 
@@ -167,16 +183,30 @@ class UpdateVoiceModelBackupUrlInput(sgqlc.types.Input):
 
 class UpdateVoiceModelConfigInput(sgqlc.types.Input):
     __schema__ = schema
-    __field_names__ = ('id', 'voice_model_id')
+    __field_names__ = ('artifact_protection', 'audio_resampling', 'filter_radius', 'id', 'pitch_extraction_method', 'search_feature_ratio', 'transpose_pitch', 'voice_model_id', 'volume_envelope_scaling')
+    artifact_protection = sgqlc.types.Field(Float, graphql_name='artifactProtection')
+
+    audio_resampling = sgqlc.types.Field(Int, graphql_name='audioResampling')
+
+    filter_radius = sgqlc.types.Field(Int, graphql_name='filterRadius')
+
     id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
 
+    pitch_extraction_method = sgqlc.types.Field(String, graphql_name='pitchExtractionMethod')
+
+    search_feature_ratio = sgqlc.types.Field(Float, graphql_name='searchFeatureRatio')
+
+    transpose_pitch = sgqlc.types.Field(Int, graphql_name='transposePitch')
+
     voice_model_id = sgqlc.types.Field(ID, graphql_name='voiceModelId')
+
+    volume_envelope_scaling = sgqlc.types.Field(Float, graphql_name='volumeEnvelopeScaling')
 
 
 
 class UpdateVoiceModelInput(sgqlc.types.Input):
     __schema__ = schema
-    __field_names__ = ('checksum_md5_for_added', 'checksum_md5_for_weights', 'checksum_sha256_for_added', 'checksum_sha256_for_weights', 'filesize', 'hidden', 'id', 'name', 'processed')
+    __field_names__ = ('checksum_md5_for_added', 'checksum_md5_for_weights', 'checksum_sha256_for_added', 'checksum_sha256_for_weights', 'filesize_for_added', 'filesize_for_weights', 'hidden', 'id', 'name', 'processed')
     checksum_md5_for_added = sgqlc.types.Field(String, graphql_name='checksumMD5ForAdded')
 
     checksum_md5_for_weights = sgqlc.types.Field(String, graphql_name='checksumMD5ForWeights')
@@ -185,7 +215,9 @@ class UpdateVoiceModelInput(sgqlc.types.Input):
 
     checksum_sha256_for_weights = sgqlc.types.Field(String, graphql_name='checksumSHA256ForWeights')
 
-    filesize = sgqlc.types.Field(Int, graphql_name='filesize')
+    filesize_for_added = sgqlc.types.Field(Int, graphql_name='filesizeForAdded')
+
+    filesize_for_weights = sgqlc.types.Field(Int, graphql_name='filesizeForWeights')
 
     hidden = sgqlc.types.Field(Boolean, graphql_name='hidden')
 
@@ -616,7 +648,7 @@ class TextToSpeechesEdge(sgqlc.types.Type):
 
 class VoiceModel(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('checksum_md5_for_added', 'checksum_md5_for_weights', 'checksum_sha256_for_added', 'checksum_sha256_for_weights', 'filesize', 'hidden', 'id', 'model_config', 'name', 'processed', 'source_model', 'text_to_speeches')
+    __field_names__ = ('checksum_md5_for_added', 'checksum_md5_for_weights', 'checksum_sha256_for_added', 'checksum_sha256_for_weights', 'filesize_for_added', 'filesize_for_weights', 'hidden', 'id', 'model_config', 'name', 'processed', 'source_model', 'text_to_speeches')
     checksum_md5_for_added = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumMD5ForAdded')
 
     checksum_md5_for_weights = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumMD5ForWeights')
@@ -625,7 +657,9 @@ class VoiceModel(sgqlc.types.Type):
 
     checksum_sha256_for_weights = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='checksumSHA256ForWeights')
 
-    filesize = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filesize')
+    filesize_for_added = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filesizeForAdded')
+
+    filesize_for_weights = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filesizeForWeights')
 
     hidden = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name='hidden')
 
@@ -689,12 +723,26 @@ class VoiceModelBackupUrlsEdge(sgqlc.types.Type):
 
 class VoiceModelConfig(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('id', 'voice_model', 'voice_model_id')
+    __field_names__ = ('artifact_protection', 'audio_resampling', 'filter_radius', 'id', 'pitch_extraction_method', 'search_feature_ratio', 'transpose_pitch', 'voice_model', 'voice_model_id', 'volume_envelope_scaling')
+    artifact_protection = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='artifactProtection')
+
+    audio_resampling = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='audioResampling')
+
+    filter_radius = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filterRadius')
+
     id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
+
+    pitch_extraction_method = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='pitchExtractionMethod')
+
+    search_feature_ratio = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='searchFeatureRatio')
+
+    transpose_pitch = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='transposePitch')
 
     voice_model = sgqlc.types.Field(sgqlc.types.non_null(VoiceModel), graphql_name='voiceModel')
 
     voice_model_id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='voiceModelId')
+
+    volume_envelope_scaling = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='volumeEnvelopeScaling')
 
 
 
