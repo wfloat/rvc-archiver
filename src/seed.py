@@ -16,8 +16,7 @@ from dataclasses import dataclass
 import zipfile
 import requests
 import shutil
-
-# import random
+import hashlib
 
 
 load_dotenv()
@@ -84,6 +83,22 @@ def download_file(url, filename):
 
     with open(filename, "wb") as f:
         f.write(response.content)
+
+
+def get_sha256(file_path):
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+
+def get_md5(file_path):
+    md5_hash = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            md5_hash.update(byte_block)
+    return md5_hash.hexdigest()
 
 
 def populate_aihub_voice_model_and_voice_model_backup_url_tables(
@@ -356,15 +371,28 @@ def build_voice_model_weights_folder_structure(
 
             # Now check the tmp directory and potentially one folder deep for the required files
             for root, dirs, files in os.walk(tmp_dir):
+                md5_hash = None
+                sha256_hash = None
+
                 for file in files:
                     if file.endswith(".pth"):
-                        shutil.move(os.path.join(root, file), weights_dir)
-                    elif file.endswith(".index"):
-                        shutil.move(os.path.join(root, file), logs_dir)
+                        md5_hash = get_md5(os.path.join(root, file))
+                        if md5_hash != zip_file.rstrip(".zip"):
+                            break
 
-                # If files are expected to be one folder deep, we break after the first iteration
-                # This can be adjusted based on the exact requirements
-                break
+                        sha256_hash = get_sha256(os.path.join(root, file))
+                        shutil.move(
+                            os.path.join(root, file),
+                            os.path.join(weights_dir, f"{sha256_hash}.pth"),
+                        )
+
+                if sha256_hash:
+                    for file in files:
+                        if file.endswith(".index"):
+                            shutil.move(
+                                os.path.join(root, file),
+                                os.path.join(logs_dir, f"{sha256_hash}.index"),
+                            )
 
             # Cleanup tmp directory after processing each zip file
             shutil.rmtree(tmp_dir)
