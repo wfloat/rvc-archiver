@@ -512,9 +512,16 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
         voice_model_sha256_hash = voice_model["checksumSHA256ForWeights"]
         model_weight_filename = f"{voice_model_sha256_hash}.pth"
         model_index_path = f"shared/logs/{voice_model_sha256_hash}.index"
+
+        gender = "male"
+
         study.optimize(
             lambda trial: objective(
-                trial, GRADIO_SERVER_URL, model_weight_filename, model_index_path
+                trial,
+                GRADIO_SERVER_URL,
+                model_weight_filename,
+                model_index_path,
+                gender,
             ),
             n_trials=OPTIMIZATION_TRIAL_COUNT,
             show_progress_bar=True,
