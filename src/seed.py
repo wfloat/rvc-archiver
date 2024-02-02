@@ -17,6 +17,8 @@ import zipfile
 import requests
 import shutil
 import hashlib
+import optuna
+from util.optimize_params import objective
 
 
 load_dotenv()
@@ -31,6 +33,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 VOICE_MODEL_PROFILES_OUTPUT_DIR = "profiles"
 VOICE_MODEL_WEIGHTS_OUTPUT_DIR = "model-zips"
+VOICE_MODEL_SHARED_DIR = "shared"
+
+OPTIMIZATION_TRIAL_COUNT = 10
+GRADIO_SERVER_URL = "http://localhost:7865/"
 
 endpoint = HTTPEndpoint(WFLOAT_API_URL)
 
@@ -478,6 +484,43 @@ def populate_voice_model_table_and_build_weights_folder_structure(
             os.makedirs(tmp_dir)  # Recreate for the next iteration
 
 
+def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
+    voice_models_query = Operations.query.voice_models
+    page_end_cursor = None
+    has_next_page = True
+
+    voice_models = []
+
+    while has_next_page:
+        res = endpoint(query=voice_models_query, variables={"after": page_end_cursor})
+
+        errors = res.get("errors")
+        if errors:
+            continue
+
+        voice_model_connection = res["data"]["VoiceModels"]
+        page_end_cursor = voice_model_connection["pageInfo"]["endCursor"]
+        has_next_page = voice_model_connection["pageInfo"]["hasNextPage"]
+
+        for edge in voice_model_connection["edges"]:
+            voice_models.append(edge["node"])
+
+    for voice_model in tqdm(voice_models):
+        print(voice_model)
+        # Optimize model parameters
+        study = optuna.create_study(direction="maximize")
+        voice_model_sha256_hash = voice_model["checksumSHA256ForWeights"]
+        model_weight_filename = f"{voice_model_sha256_hash}.pth"
+        model_index_path = f"shared/logs/{voice_model_sha256_hash}.index"
+        study.optimize(
+            lambda trial: objective(
+                trial, GRADIO_SERVER_URL, model_weight_filename, model_index_path
+            ),
+            n_trials=OPTIMIZATION_TRIAL_COUNT,
+            show_progress_bar=True,
+        )
+
+
 def main():
     # # sheet_data = get_sheet_json(doc_id, sheet_id)
     # sheet_data = json.load(open("./sheet.json"))
@@ -487,9 +530,10 @@ def main():
     # generate_voice_model_profiles_with_openai(VOICE_MODEL_PROFILES_OUTPUT_DIR)
     # populate_voice_model_profile_table(VOICE_MODEL_PROFILES_OUTPUT_DIR)
     # download_voice_model_weights(VOICE_MODEL_WEIGHTS_OUTPUT_DIR)
-    populate_voice_model_table_and_build_weights_folder_structure(
-        VOICE_MODEL_WEIGHTS_OUTPUT_DIR, "shared"
-    )
+    # populate_voice_model_table_and_build_weights_folder_structure(
+    #     VOICE_MODEL_WEIGHTS_OUTPUT_DIR, VOICE_MODEL_SHARED_DIR
+    # )
+    tune_voice_models_and_populate_voice_model_config_table(VOICE_MODEL_SHARED_DIR)
 
 
 if __name__ == "__main__":

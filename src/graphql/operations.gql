@@ -94,6 +94,32 @@ query AIHubVoiceModels($after: String) {
   }
 }
 
+query VoiceModels($after: String) {
+  VoiceModels(first: 50, after: $after) {
+    edges {
+      cursor
+      node {
+        checksumMD5ForAdded
+        checksumMD5ForWeights
+        checksumSHA256ForAdded
+        checksumSHA256ForWeights
+        filesizeForAdded
+        filesizeForWeights
+        hidden
+        id
+        name
+        processed
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+      hasPreviousPage
+      startCursor
+    }
+  }
+}
+
 query AIHubVoiceModelUsingChecksumMD5ForWeights($checksumMD5ForWeights: String) {
   AIHubVoiceModel(checksumMD5ForWeights: $checksumMD5ForWeights) {
     creatorText

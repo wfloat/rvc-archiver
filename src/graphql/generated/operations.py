@@ -171,6 +171,34 @@ def query_aihub_voice_models():
     return _op
 
 
+def query_voice_models():
+    _op = sgqlc.operation.Operation(
+        _schema_root.query_type,
+        name="VoiceModels",
+        variables=dict(after=sgqlc.types.Arg(_schema.String)),
+    )
+    _op_voice_models = _op.voice_models(first=50, after=sgqlc.types.Variable("after"))
+    _op_voice_models_edges = _op_voice_models.edges()
+    _op_voice_models_edges.cursor()
+    _op_voice_models_edges_node = _op_voice_models_edges.node()
+    _op_voice_models_edges_node.checksum_md5_for_added()
+    _op_voice_models_edges_node.checksum_md5_for_weights()
+    _op_voice_models_edges_node.checksum_sha256_for_added()
+    _op_voice_models_edges_node.checksum_sha256_for_weights()
+    _op_voice_models_edges_node.filesize_for_added()
+    _op_voice_models_edges_node.filesize_for_weights()
+    _op_voice_models_edges_node.hidden()
+    _op_voice_models_edges_node.id()
+    _op_voice_models_edges_node.name()
+    _op_voice_models_edges_node.processed()
+    _op_voice_models_page_info = _op_voice_models.page_info()
+    _op_voice_models_page_info.end_cursor()
+    _op_voice_models_page_info.has_next_page()
+    _op_voice_models_page_info.has_previous_page()
+    _op_voice_models_page_info.start_cursor()
+    return _op
+
+
 def query_aihub_voice_model_using_checksum_md5_for_weights():
     _op = sgqlc.operation.Operation(
         _schema_root.query_type,
@@ -207,6 +235,7 @@ class Query:
         query_aihub_voice_model_using_checksum_md5_for_weights()
     )
     aihub_voice_models = query_aihub_voice_models()
+    voice_models = query_voice_models()
 
 
 class Operations:
