@@ -13,6 +13,18 @@ PITCH_EXTRACTION_METHOD = "rmvpe"
 F0_CURVE = "f0G40k.pth"
 
 
+def empty_directory(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print(f"Failed to delete {file_path}. Reason: {e}")
+
+
 def objective(
     trial: Trial, gradio_server_url, model_weight_filename, model_index_path, gender
 ):
@@ -85,6 +97,13 @@ def objective(
         quality_scores.append(quality)
         audio_output_dir = audio_output_file.replace(f"/audio.wav", "")
         shutil.rmtree(audio_output_dir)
+
+        if gradio_server_url == "http://localhost:7865/":
+            empty_directory("tmp-rvc-0")
+        elif gradio_server_url == "http://localhost:7866/":
+            empty_directory("tmp-rvc-1")
+        elif gradio_server_url == "http://localhost:7867/":
+            empty_directory("tmp-rvc-2")
 
     average_quality = np.mean(quality_scores)
     return average_quality
