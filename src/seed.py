@@ -561,7 +561,18 @@ def optimize_model(voice_model, gradio_server_port):
 
 def process_voice_models(models, port):
     for model in tqdm(models):
-        optimize_model(model, gradio_server_port=port)
+        try:
+            optimize_model(model, gradio_server_port=port)
+        except Exception as e:
+            error_message = str(e)
+            model_info = json.dumps(model, default=str, indent=4)
+
+            error_filename = f"errors/error_{model['id']}.txt"
+
+            with open(error_filename, "w") as file:
+                file.write(
+                    f"Model Info:\n{model_info}\n\nError Message:\n{error_message}"
+                )
 
 
 def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
@@ -589,9 +600,7 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
 
     with ThreadPoolExecutor(max_workers=MAX_WORKER_THREADS) as executor:
         for i, models_chunk in enumerate(voice_model_chunks):
-            port = GRADIO_SERVER_PORTS[
-                i % len(GRADIO_SERVER_PORTS)
-            ]  # Ensure port is selected within bounds
+            port = GRADIO_SERVER_PORTS[i]
             executor.submit(process_voice_models, models_chunk, port)
         # print(results)
 
