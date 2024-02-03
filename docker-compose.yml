@@ -1,8 +1,8 @@
 version: "3.8"
 services:
-  rvc:
+  rvc0:
     image: mitchsayre/rvc:latest
-    container_name: rvc
+    container_name: rvc0
     volumes:
       - ./shared/weights:/app/assets/weights
       - ./shared:/app/shared
@@ -16,6 +16,125 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [ gpu ]
+
+  rvc1:
+    image: mitchsayre/rvc:latest
+    container_name: rvc1
+    volumes:
+      - ./shared/weights:/app/assets/weights
+      - ./shared:/app/shared
+      # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+    ports:
+      - 7866:7865
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  rvc2:
+    image: mitchsayre/rvc:latest
+    container_name: rvc2
+    volumes:
+      - ./shared/weights:/app/assets/weights
+      - ./shared:/app/shared
+      # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+    ports:
+      - 7867:7865
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  # rvc3:
+  #   image: mitchsayre/rvc:latest
+  #   container_name: rvc3
+  #   volumes:
+  #     - ./shared/weights:/app/assets/weights
+  #     - ./shared:/app/shared
+  #     # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+  #   ports:
+  #     - 7868:7865
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [ gpu ]
+
+  # rvc4:
+  #   image: mitchsayre/rvc:latest
+  #   container_name: rvc4
+  #   volumes:
+  #     - ./shared/weights:/app/assets/weights
+  #     - ./shared:/app/shared
+  #     # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+  #   ports:
+  #     - 7869:7865
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [ gpu ]
+
+  # rvc5:
+  #   image: mitchsayre/rvc:latest
+  #   container_name: rvc5
+  #   volumes:
+  #     - ./shared/weights:/app/assets/weights
+  #     - ./shared:/app/shared
+  #     # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+  #   ports:
+  #     - 7870:7865
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [ gpu ]
+
+  # rvc6:
+  #   image: mitchsayre/rvc:latest
+  #   container_name: rvc6
+  #   volumes:
+  #     - ./shared/weights:/app/assets/weights
+  #     - ./shared:/app/shared
+  #     # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+  #   ports:
+  #     - 7871:7865
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [ gpu ]
+
+  # rvc7:
+  #   image: mitchsayre/rvc:latest
+  #   container_name: rvc7
+  #   volumes:
+  #     - ./shared/weights:/app/assets/weights
+  #     - ./shared:/app/shared
+  #     # - ./dataset:/app/dataset # you can use this folder in order to provide your dataset for model training
+  #   ports:
+  #     - 7872:7865
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [ gpu ]
 
   nisqa:
     build: ../packages/NISQA

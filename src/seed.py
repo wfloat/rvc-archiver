@@ -25,6 +25,8 @@ from util.optimize_params import (
     AUDIO_RESAMPLING,
     PITCH_EXTRACTION_METHOD,
 )
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 load_dotenv()
 
@@ -41,7 +43,21 @@ VOICE_MODEL_WEIGHTS_OUTPUT_DIR = "model-zips"
 VOICE_MODEL_SHARED_DIR = "shared"
 
 OPTIMIZATION_TRIAL_COUNT = 1
-GRADIO_SERVER_URL = "http://localhost:7865/"
+# GRADIO_SERVER_URL = "http://localhost:7865/"
+MAX_WORKER_THREADS = 3
+# TODO: Figure out why 3 threads is the sweet spot for optimizing the models in parallel and not more
+GRADIO_SERVER_PORTS = [
+    "7865",
+    "7866",
+    "7867",
+    # "7868",
+    # "7869",
+    # "7870",
+    # "7871",
+    # "7872",
+]
+
+assert MAX_WORKER_THREADS == len(GRADIO_SERVER_PORTS)
 
 endpoint = HTTPEndpoint(WFLOAT_API_URL)
 
@@ -489,9 +505,52 @@ def populate_voice_model_table_and_build_weights_folder_structure(
             os.makedirs(tmp_dir)  # Recreate for the next iteration
 
 
+def optimize_model(voice_model, gradio_server_port):
+    create_voice_model_config = Operations.mutation.create_voice_model_config
+    # Optimize model parameters
+    study = optuna.create_study(direction="maximize")
+    voice_model_sha256_hash = voice_model["checksumSHA256ForWeights"]
+    model_weight_filename = f"{voice_model_sha256_hash}.pth"
+    model_index_path = f"shared/logs/{voice_model_sha256_hash}.index"
+
+    gender = voice_model["sourceModel"]["inferredProfile"]["gender"]
+
+    gradio_server_url = f"http://localhost:{gradio_server_port}/"
+
+    study.optimize(
+        lambda trial: objective(
+            trial,
+            gradio_server_url,
+            model_weight_filename,
+            model_index_path,
+            gender,
+        ),
+        n_trials=OPTIMIZATION_TRIAL_COUNT,
+        show_progress_bar=True,
+    )
+
+    input_data = {
+        "qualityScore": study.best_value,
+        "f0Curve": F0_CURVE,
+        "transposePitch": TRANSPOSE_PITCH,
+        "pitchExtractionMethod": PITCH_EXTRACTION_METHOD,
+        "searchFeatureRatio": study.best_params["search_feature_ratio"],
+        "filterRadius": study.best_params["filter_radius"],
+        "audioResampling": AUDIO_RESAMPLING,
+        "volumeEnvelopeScaling": study.best_params["volume_envelope_scaling"],
+        "artifactProtection": study.best_params["artifact_protection"],
+        "voiceModelId": voice_model["id"],
+    }
+
+    res = endpoint(query=create_voice_model_config, variables={"input": input_data})
+    print(res["data"]["createVoiceModelConfig"])
+    errors = res.get("errors")
+    if errors:
+        print(errors)
+
+
 def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
     voice_models_query = Operations.query.voice_models
-    create_voice_model_config = Operations.mutation.create_voice_model_config
     page_end_cursor = None
     has_next_page = True
 
@@ -511,47 +570,15 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
         for edge in voice_model_connection["edges"]:
             voice_models.append(edge["node"])
 
-    for voice_model in tqdm(voice_models):
-        print(voice_model)
-        # Optimize model parameters
-        study = optuna.create_study(direction="maximize")
-        voice_model_sha256_hash = voice_model["checksumSHA256ForWeights"]
-        model_weight_filename = f"{voice_model_sha256_hash}.pth"
-        model_index_path = f"shared/logs/{voice_model_sha256_hash}.index"
+        with ThreadPoolExecutor(max_workers=MAX_WORKER_THREADS) as executor:
+            # Create a list of partial functions with the respective port
+            tasks = [
+                partial(optimize_model, voice_model, gradio_server_port=port)
+                for voice_model, port in zip(voice_models, GRADIO_SERVER_PORTS)
+            ]
 
-        gender = voice_model["sourceModel"]["inferredProfile"]["gender"]
-        print(gender)
-
-        study.optimize(
-            lambda trial: objective(
-                trial,
-                GRADIO_SERVER_URL,
-                model_weight_filename,
-                model_index_path,
-                gender,
-            ),
-            n_trials=OPTIMIZATION_TRIAL_COUNT,
-            show_progress_bar=True,
-        )
-
-        input_data = {
-            "qualityScore": study.best_value,
-            "f0Curve": F0_CURVE,
-            "transposePitch": TRANSPOSE_PITCH,
-            "pitchExtractionMethod": PITCH_EXTRACTION_METHOD,
-            "searchFeatureRatio": study.best_params["search_feature_ratio"],
-            "filterRadius": study.best_params["filter_radius"],
-            "audioResampling": AUDIO_RESAMPLING,
-            "volumeEnvelopeScaling": study.best_params["volume_envelope_scaling"],
-            "artifactProtection": study.best_params["artifact_protection"],
-            "voiceModelId": voice_model["id"],
-        }
-
-        res = endpoint(query=create_voice_model_config, variables={"input": input_data})
-
-        errors = res.get("errors")
-        if errors:
-            print(errors)
+            executor.map(lambda f: f(), tasks)
+            # print(results)
 
 
 def main():
