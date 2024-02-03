@@ -2,18 +2,20 @@ from typing import Optional, Literal
 from dataclasses import dataclass, asdict
 import requests
 
-NISQA_PORT = 5239
+NISQA_PORT = 5240
 NISQA_URL = f"http://localhost:{NISQA_PORT}"
 
 pretrained_model_options = Literal["nisqa", "nisqa_mos_only", "nisqa_tts"]
+
+
 @dataclass
-class PredictFileArgs():
+class PredictFileArgs:
     pretrained_model: pretrained_model_options
     deg: str
 
 
 @dataclass
-class PredictFileResponse():
+class PredictFileResponse:
     deg: str
     mos_pred: float
     model: str
@@ -21,6 +23,7 @@ class PredictFileResponse():
     dis_pred: Optional[float] = None
     col_pred: Optional[float] = None
     loud_pred: Optional[float] = None
+
 
 def predict_speech_quality(args: PredictFileArgs) -> PredictFileResponse:
     endpoint = "predict_file"
@@ -34,4 +37,6 @@ def predict_speech_quality(args: PredictFileArgs) -> PredictFileResponse:
         response_data = response.json()
         return PredictFileResponse(**response_data)
     else:
-        raise Exception(f"NISQA {endpoint} failed with status code: {response.status_code}")
+        raise Exception(
+            f"NISQA {endpoint} failed with status code: {response.status_code}"
+        )
