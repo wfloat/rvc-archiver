@@ -42,7 +42,8 @@ VOICE_MODEL_PROFILES_OUTPUT_DIR = "profiles"
 VOICE_MODEL_WEIGHTS_OUTPUT_DIR = "model-zips"
 VOICE_MODEL_SHARED_DIR = "shared"
 
-OPTIMIZATION_TRIAL_COUNT = 1
+OPTUNA_SHOW_PROGRESS_BAR = False
+OPTIMIZATION_TRIAL_COUNT = 100
 # GRADIO_SERVER_URL = "http://localhost:7865/"
 MAX_WORKER_THREADS = 3
 # TODO: Figure out why 3 threads is the sweet spot for optimizing the models in parallel and not more
@@ -126,6 +127,15 @@ def get_md5(file_path):
         for byte_block in iter(lambda: f.read(4096), b""):
             md5_hash.update(byte_block)
     return md5_hash.hexdigest()
+
+
+def chunk_it(seq, num):
+    """Yield successive n-sized chunks from seq."""
+    avg = len(seq) / float(num)
+    last = 0.0
+    while last < len(seq):
+        yield seq[int(last) : int(last + avg)]
+        last += avg
 
 
 def populate_aihub_voice_model_and_voice_model_backup_url_tables(
@@ -526,7 +536,7 @@ def optimize_model(voice_model, gradio_server_port):
             gender,
         ),
         n_trials=OPTIMIZATION_TRIAL_COUNT,
-        show_progress_bar=True,
+        show_progress_bar=OPTUNA_SHOW_PROGRESS_BAR,
     )
 
     input_data = {
@@ -547,6 +557,11 @@ def optimize_model(voice_model, gradio_server_port):
     errors = res.get("errors")
     if errors:
         print(errors)
+
+
+def process_voice_models(models, port):
+    for model in tqdm(models):
+        optimize_model(model, gradio_server_port=port)
 
 
 def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
@@ -570,15 +585,15 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
         for edge in voice_model_connection["edges"]:
             voice_models.append(edge["node"])
 
-        with ThreadPoolExecutor(max_workers=MAX_WORKER_THREADS) as executor:
-            # Create a list of partial functions with the respective port
-            tasks = [
-                partial(optimize_model, voice_model, gradio_server_port=port)
-                for voice_model, port in zip(voice_models, GRADIO_SERVER_PORTS)
-            ]
+    voice_model_chunks = list(chunk_it(voice_models, MAX_WORKER_THREADS))
 
-            executor.map(lambda f: f(), tasks)
-            # print(results)
+    with ThreadPoolExecutor(max_workers=MAX_WORKER_THREADS) as executor:
+        for i, models_chunk in enumerate(voice_model_chunks):
+            port = GRADIO_SERVER_PORTS[
+                i % len(GRADIO_SERVER_PORTS)
+            ]  # Ensure port is selected within bounds
+            executor.submit(process_voice_models, models_chunk, port)
+        # print(results)
 
 
 def main():
