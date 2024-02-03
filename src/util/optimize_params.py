@@ -7,6 +7,11 @@ import os
 import numpy as np
 import shutil
 
+TRANSPOSE_PITCH = 0
+AUDIO_RESAMPLING = 0
+PITCH_EXTRACTION_METHOD = "rmvpe"
+F0_CURVE = "f0G40k.pth"
+
 
 def objective(
     trial: Trial, gradio_server_url, model_weight_filename, model_index_path, gender
@@ -21,13 +26,13 @@ def objective(
         # volume_envelope_scaling = trial.suggest_float("volume_envelope_scaling", 0.0, 1.0, step=0.01),
         # artifact_protection = trial.suggest_float("artifact_protection", 0.0, 0.5, step=0.01),
         # transpose_pitch=trial.suggest_int("transpose_pitch", -24, 24),
-        transpose_pitch=0,
-        pitch_extraction_method="rmvpe",
+        transpose_pitch=TRANSPOSE_PITCH,
+        pitch_extraction_method=PITCH_EXTRACTION_METHOD,
         search_feature_ratio=trial.suggest_float(
             "search_feature_ratio", 0.0, 1.0, step=0.02
         ),  # 0.57,
         filter_radius=trial.suggest_int("filter_radius", 0, 7),  # 3,
-        audio_resampling=0,
+        audio_resampling=AUDIO_RESAMPLING,
         volume_envelope_scaling=trial.suggest_float(
             "volume_envelope_scaling", 0.0, 1.0, step=0.02
         ),  # 0.41,
@@ -53,7 +58,7 @@ def objective(
         audio_input_path = os.path.join("shared/input", female_voice)
 
     audio_output_path = "shared/output"
-    f0_curve_path = "shared/f0/f0G40k.pth"
+    f0_curve_path = f"shared/f0/{F0_CURVE}"
 
     gradio_client = Client(gradio_server_url, output_dir=audio_output_path)
 

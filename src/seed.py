@@ -18,8 +18,13 @@ import requests
 import shutil
 import hashlib
 import optuna
-from util.optimize_params import objective
-
+from util.optimize_params import (
+    objective,
+    TRANSPOSE_PITCH,
+    F0_CURVE,
+    AUDIO_RESAMPLING,
+    PITCH_EXTRACTION_METHOD,
+)
 
 load_dotenv()
 
@@ -35,7 +40,7 @@ VOICE_MODEL_PROFILES_OUTPUT_DIR = "profiles"
 VOICE_MODEL_WEIGHTS_OUTPUT_DIR = "model-zips"
 VOICE_MODEL_SHARED_DIR = "shared"
 
-OPTIMIZATION_TRIAL_COUNT = 10
+OPTIMIZATION_TRIAL_COUNT = 1
 GRADIO_SERVER_URL = "http://localhost:7865/"
 
 endpoint = HTTPEndpoint(WFLOAT_API_URL)
@@ -486,6 +491,7 @@ def populate_voice_model_table_and_build_weights_folder_structure(
 
 def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
     voice_models_query = Operations.query.voice_models
+    create_voice_model_config = Operations.mutation.create_voice_model_config
     page_end_cursor = None
     has_next_page = True
 
@@ -513,7 +519,8 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
         model_weight_filename = f"{voice_model_sha256_hash}.pth"
         model_index_path = f"shared/logs/{voice_model_sha256_hash}.index"
 
-        gender = "male"
+        gender = voice_model["sourceModel"]["inferredProfile"]["gender"]
+        print(gender)
 
         study.optimize(
             lambda trial: objective(
@@ -526,6 +533,25 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
             n_trials=OPTIMIZATION_TRIAL_COUNT,
             show_progress_bar=True,
         )
+
+        input_data = {
+            "qualityScore": study.best_value,
+            "f0Curve": F0_CURVE,
+            "transposePitch": TRANSPOSE_PITCH,
+            "pitchExtractionMethod": PITCH_EXTRACTION_METHOD,
+            "searchFeatureRatio": study.best_params["search_feature_ratio"],
+            "filterRadius": study.best_params["filter_radius"],
+            "audioResampling": AUDIO_RESAMPLING,
+            "volumeEnvelopeScaling": study.best_params["volume_envelope_scaling"],
+            "artifactProtection": study.best_params["artifact_protection"],
+            "voiceModelId": voice_model["id"],
+        }
+
+        res = endpoint(query=create_voice_model_config, variables={"input": input_data})
+
+        errors = res.get("errors")
+        if errors:
+            print(errors)
 
 
 def main():
