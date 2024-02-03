@@ -115,10 +115,38 @@ def mutation_update_aihub_voice_model():
     return _op
 
 
+def mutation_create_voice_model_config():
+    _op = sgqlc.operation.Operation(
+        _schema_root.mutation_type,
+        name="CreateVoiceModelConfig",
+        variables=dict(
+            input=sgqlc.types.Arg(
+                sgqlc.types.non_null(_schema.CreateVoiceModelConfigInput)
+            )
+        ),
+    )
+    _op_create_voice_model_config = _op.create_voice_model_config(
+        input=sgqlc.types.Variable("input")
+    )
+    _op_create_voice_model_config.artifact_protection()
+    _op_create_voice_model_config.audio_resampling()
+    _op_create_voice_model_config.f0_curve()
+    _op_create_voice_model_config.filter_radius()
+    _op_create_voice_model_config.id()
+    _op_create_voice_model_config.pitch_extraction_method()
+    _op_create_voice_model_config.quality_score()
+    _op_create_voice_model_config.search_feature_ratio()
+    _op_create_voice_model_config.transpose_pitch()
+    _op_create_voice_model_config.voice_model_id()
+    _op_create_voice_model_config.volume_envelope_scaling()
+    return _op
+
+
 class Mutation:
     create_aihub_voice_model = mutation_create_aihub_voice_model()
     create_voice_model = mutation_create_voice_model()
     create_voice_model_backup_url = mutation_create_voice_model_backup_url()
+    create_voice_model_config = mutation_create_voice_model_config()
     create_voice_model_profile = mutation_create_voice_model_profile()
     update_aihub_voice_model = mutation_update_aihub_voice_model()
 
@@ -191,6 +219,15 @@ def query_voice_models():
     _op_voice_models_edges_node.id()
     _op_voice_models_edges_node.name()
     _op_voice_models_edges_node.processed()
+    _op_voice_models_edges_node_source_model = (
+        _op_voice_models_edges_node.source_model()
+    )
+    _op_voice_models_edges_node_source_model_inferred_profile = (
+        _op_voice_models_edges_node_source_model.inferred_profile()
+    )
+    _op_voice_models_edges_node_source_model_inferred_profile.gender()
+    _op_voice_models_edges_node_source_model_inferred_profile.name()
+    _op_voice_models_edges_node_source_model_inferred_profile.id()
     _op_voice_models_page_info = _op_voice_models.page_info()
     _op_voice_models_page_info.end_cursor()
     _op_voice_models_page_info.has_next_page()

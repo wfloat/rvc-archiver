@@ -71,14 +71,18 @@ class CreateVoiceModelBackupUrlInput(sgqlc.types.Input):
 
 class CreateVoiceModelConfigInput(sgqlc.types.Input):
     __schema__ = schema
-    __field_names__ = ('artifact_protection', 'audio_resampling', 'filter_radius', 'pitch_extraction_method', 'search_feature_ratio', 'transpose_pitch', 'voice_model_id', 'volume_envelope_scaling')
+    __field_names__ = ('artifact_protection', 'audio_resampling', 'f0_curve', 'filter_radius', 'pitch_extraction_method', 'quality_score', 'search_feature_ratio', 'transpose_pitch', 'voice_model_id', 'volume_envelope_scaling')
     artifact_protection = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='artifactProtection')
 
     audio_resampling = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='audioResampling')
 
+    f0_curve = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='f0Curve')
+
     filter_radius = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filterRadius')
 
     pitch_extraction_method = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='pitchExtractionMethod')
+
+    quality_score = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='qualityScore')
 
     search_feature_ratio = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='searchFeatureRatio')
 
@@ -183,16 +187,20 @@ class UpdateVoiceModelBackupUrlInput(sgqlc.types.Input):
 
 class UpdateVoiceModelConfigInput(sgqlc.types.Input):
     __schema__ = schema
-    __field_names__ = ('artifact_protection', 'audio_resampling', 'filter_radius', 'id', 'pitch_extraction_method', 'search_feature_ratio', 'transpose_pitch', 'voice_model_id', 'volume_envelope_scaling')
+    __field_names__ = ('artifact_protection', 'audio_resampling', 'f0_curve', 'filter_radius', 'id', 'pitch_extraction_method', 'quality_score', 'search_feature_ratio', 'transpose_pitch', 'voice_model_id', 'volume_envelope_scaling')
     artifact_protection = sgqlc.types.Field(Float, graphql_name='artifactProtection')
 
     audio_resampling = sgqlc.types.Field(Int, graphql_name='audioResampling')
+
+    f0_curve = sgqlc.types.Field(String, graphql_name='f0Curve')
 
     filter_radius = sgqlc.types.Field(Int, graphql_name='filterRadius')
 
     id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
 
     pitch_extraction_method = sgqlc.types.Field(String, graphql_name='pitchExtractionMethod')
+
+    quality_score = sgqlc.types.Field(Float, graphql_name='qualityScore')
 
     search_feature_ratio = sgqlc.types.Field(Float, graphql_name='searchFeatureRatio')
 
@@ -723,16 +731,20 @@ class VoiceModelBackupUrlsEdge(sgqlc.types.Type):
 
 class VoiceModelConfig(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ('artifact_protection', 'audio_resampling', 'filter_radius', 'id', 'pitch_extraction_method', 'search_feature_ratio', 'transpose_pitch', 'voice_model', 'voice_model_id', 'volume_envelope_scaling')
+    __field_names__ = ('artifact_protection', 'audio_resampling', 'f0_curve', 'filter_radius', 'id', 'pitch_extraction_method', 'quality_score', 'search_feature_ratio', 'transpose_pitch', 'voice_model', 'voice_model_id', 'volume_envelope_scaling')
     artifact_protection = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='artifactProtection')
 
     audio_resampling = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='audioResampling')
+
+    f0_curve = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='f0Curve')
 
     filter_radius = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name='filterRadius')
 
     id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name='id')
 
     pitch_extraction_method = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name='pitchExtractionMethod')
+
+    quality_score = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='qualityScore')
 
     search_feature_ratio = sgqlc.types.Field(sgqlc.types.non_null(Float), graphql_name='searchFeatureRatio')
 

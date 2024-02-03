@@ -54,6 +54,22 @@ mutation UpdateAIHubVoiceModel($input: UpdateAIHubVoiceModelInput!) {
   }
 }
 
+mutation CreateVoiceModelConfig($input: CreateVoiceModelConfigInput!) {
+  createVoiceModelConfig(input: $input) {
+    artifactProtection
+    audioResampling
+    f0Curve
+    filterRadius
+    id
+    pitchExtractionMethod
+    qualityScore
+    searchFeatureRatio
+    transposePitch
+    voiceModelId
+    volumeEnvelopeScaling
+  }
+}
+
 query AIHubVoiceModels($after: String) {
   AIHubVoiceModels(first: 100, minDownloadCount: 75, after: $after) {
     pageInfo {
@@ -109,6 +125,13 @@ query VoiceModels($after: String) {
         id
         name
         processed
+        sourceModel {
+          inferredProfile {
+            gender
+            name
+            id
+          }
+        }
       }
     }
     pageInfo {
