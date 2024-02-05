@@ -236,6 +236,29 @@ def query_voice_models():
     return _op
 
 
+def query_voice_model_configs():
+    _op = sgqlc.operation.Operation(
+        _schema_root.query_type,
+        name="VoiceModelConfigs",
+        variables=dict(after=sgqlc.types.Arg(_schema.String)),
+    )
+    _op_voice_model_configs = _op.voice_model_configs(
+        first=50, after=sgqlc.types.Variable("after")
+    )
+    _op_voice_model_configs_edges = _op_voice_model_configs.edges()
+    _op_voice_model_configs_edges.cursor()
+    _op_voice_model_configs_edges_node = _op_voice_model_configs_edges.node()
+    _op_voice_model_configs_edges_node.id()
+    _op_voice_model_configs_edges_node.quality_score()
+    _op_voice_model_configs_edges_node.voice_model_id()
+    _op_voice_model_configs_page_info = _op_voice_model_configs.page_info()
+    _op_voice_model_configs_page_info.end_cursor()
+    _op_voice_model_configs_page_info.has_next_page()
+    _op_voice_model_configs_page_info.has_previous_page()
+    _op_voice_model_configs_page_info.start_cursor()
+    return _op
+
+
 def query_aihub_voice_model_using_checksum_md5_for_weights():
     _op = sgqlc.operation.Operation(
         _schema_root.query_type,
@@ -272,6 +295,7 @@ class Query:
         query_aihub_voice_model_using_checksum_md5_for_weights()
     )
     aihub_voice_models = query_aihub_voice_models()
+    voice_model_configs = query_voice_model_configs()
     voice_models = query_voice_models()
 
 

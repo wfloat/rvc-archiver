@@ -143,6 +143,25 @@ query VoiceModels($after: String) {
   }
 }
 
+query VoiceModelConfigs($after: String) {
+  VoiceModelConfigs(first: 50, after: $after) {
+    edges {
+      cursor
+      node {
+        id
+        qualityScore
+        voiceModelId
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+      hasPreviousPage
+      startCursor
+    }
+  }
+}
+
 query AIHubVoiceModelUsingChecksumMD5ForWeights($checksumMD5ForWeights: String) {
   AIHubVoiceModel(checksumMD5ForWeights: $checksumMD5ForWeights) {
     creatorText
