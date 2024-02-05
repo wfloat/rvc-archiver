@@ -596,7 +596,34 @@ def tune_voice_models_and_populate_voice_model_config_table(voice_model_dir):
         for edge in voice_model_connection["edges"]:
             voice_models.append(edge["node"])
 
-    voice_model_chunks = list(chunk_it(voice_models, MAX_WORKER_THREADS))
+    voice_model_configs_query = Operations.query.voice_model_configs
+    page_end_cursor = None
+    has_next_page = True
+
+    voice_model_configs = []
+    while has_next_page:
+        res = endpoint(
+            query=voice_model_configs_query, variables={"after": page_end_cursor}
+        )
+
+        errors = res.get("errors")
+        if errors:
+            continue
+
+        voice_model_config_connection = res["data"]["VoiceModelConfigs"]
+        page_end_cursor = voice_model_config_connection["pageInfo"]["endCursor"]
+        has_next_page = voice_model_config_connection["pageInfo"]["hasNextPage"]
+
+        for edge in voice_model_config_connection["edges"]:
+            voice_model_configs.append(edge["node"])
+
+    voice_models_filtered = [
+        model
+        for model in voice_models
+        if model["id"] not in {config["voiceModelId"] for config in voice_model_configs}
+    ]
+
+    voice_model_chunks = list(chunk_it(voice_models_filtered, MAX_WORKER_THREADS))
 
     with ThreadPoolExecutor(max_workers=MAX_WORKER_THREADS) as executor:
         for i, models_chunk in enumerate(voice_model_chunks):
