@@ -67,6 +67,8 @@ with zipfile.ZipFile("shared.zip", "w", compression=zipfile.ZIP_DEFLATED) as myz
 
     myzip.writestr("shared/input/", "")
     myzip.writestr("shared/output/", "")
+    for file in specific_files_to_include:
+        myzip.write(file, arcname=file)
 
     for folder_name, subfolders, filenames in os.walk("shared"):
         for filename in tqdm(filenames):
