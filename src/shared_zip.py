@@ -9,6 +9,7 @@ from graphql.generated.operations import Operations
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 import zipfile
+from tqdm import tqdm
 
 # Define the array of objects with criteria for including files in the ZIP
 voice_models = []
@@ -39,8 +40,6 @@ def get_voice_models():
     page_end_cursor = None
     has_next_page = True
 
-    voice_models = []
-
     while has_next_page:
         res = endpoint(query=voice_models_query, variables={"after": page_end_cursor})
 
@@ -63,16 +62,17 @@ def get_voice_models():
 
 
 # Create a ZIP file
-with zipfile.ZipFile("shared.zip", "w") as myzip:
+with zipfile.ZipFile("shared.zip", "w", compression=zipfile.ZIP_DEFLATED) as myzip:
     get_voice_models()
 
     myzip.writestr("shared/input/", "")
     myzip.writestr("shared/output/", "")
 
     for folder_name, subfolders, filenames in os.walk("shared"):
-        for filename in filenames:
+        for filename in tqdm(filenames):
             if file_should_be_included(os.path.basename(folder_name), filename):
                 file_path = os.path.join(folder_name, filename)
-                myzip.write(file_path, arcname=os.path.relpath(file_path, "shared"))
+                # arcname = os.path.relpath(file_path, "shared")
+                myzip.write(file_path, arcname=file_path)
 
 print("ZIP file created successfully.")
