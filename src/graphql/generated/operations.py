@@ -142,6 +142,21 @@ def mutation_create_voice_model_config():
     return _op
 
 
+def mutation_update_voice_model():
+    _op = sgqlc.operation.Operation(
+        _schema_root.mutation_type,
+        name="UpdateVoiceModel",
+        variables=dict(
+            input=sgqlc.types.Arg(sgqlc.types.non_null(_schema.UpdateVoiceModelInput))
+        ),
+    )
+    _op_update_voice_model = _op.update_voice_model(input=sgqlc.types.Variable("input"))
+    _op_update_voice_model.hidden()
+    _op_update_voice_model.id()
+    _op_update_voice_model.name()
+    return _op
+
+
 class Mutation:
     create_aihub_voice_model = mutation_create_aihub_voice_model()
     create_voice_model = mutation_create_voice_model()
@@ -149,6 +164,7 @@ class Mutation:
     create_voice_model_config = mutation_create_voice_model_config()
     create_voice_model_profile = mutation_create_voice_model_profile()
     update_aihub_voice_model = mutation_update_aihub_voice_model()
+    update_voice_model = mutation_update_voice_model()
 
 
 def query_aihub_voice_models():

@@ -1,3 +1,4 @@
+# Builds the shared.zip with the VoiceModels have hidden = False
 import os
 import zipfile
 from dotenv import load_dotenv
