@@ -6,6 +6,7 @@ from typing import Optional, List, Dict, Any
 import cv2
 import random
 import os
+import math
 
 SILENCE_THRESHOLD = 10  # in hundredths of a second
 SEGMENT_MINIMUM_LENGTH = 100  # in hundredths of a second
@@ -63,40 +64,6 @@ def segment_speech_audio(frequencies: List[float]) -> list[SpeechSegment]:
     return segments_filtered
 
 
-# def save_video_frames(
-#     SpeechSegment: SpeechSegment,
-#     frequencies_count: int,
-#     video_capture,
-#     video_total_frames: int,
-#     output_dir: str,
-# ):
-#     segment_index_start = SpeechSegment.index_start
-#     segment_index_end = SpeechSegment.index_end
-
-#     segment_midpoint = (segment_index_start + segment_index_end) / 2.0
-#     frame_sampling_start = segment_midpoint - SEGMENT_FRAMES_SAMPLING_WIDTH / 2
-#     frame_sampling_end = segment_midpoint + SEGMENT_FRAMES_SAMPLING_WIDTH / 2
-
-#     frame_sampling_positions = np.linspace(
-#         frame_sampling_start, frame_sampling_end, num=SEGMENT_FRAMES_COUNT
-#     )
-
-#     for index, frame_sampling_position in enumerate(frame_sampling_positions):
-#         frame_position_normalized = frame_sampling_position / frequencies_count
-
-#         audio_frame_index = int(frame_sampling_position)
-
-#         frame_index = int(frame_position_normalized * video_total_frames)
-#         video_capture.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
-#         ret, frame = video_capture.read()
-#         if ret:
-#             frame_filename = f"{output_dir}/{audio_frame_index}.jpg"
-#             cv2.imwrite(frame_filename, frame)
-#             print(f"Saved {frame_filename}")
-#         else:
-#             print(f"Error reading frame at position {audio_frame_index}")
-
-
 FEMALE_OUTPUT_DIR = "frequency/ava"
 MALE_OUTPUT_DIR = "frequency/andrew"
 
@@ -115,17 +82,27 @@ def compute_f0(input_dir: str):
         frequencies = read_file_to_numpy_array(f"{input_dir}/{file}")
         average = average_excluding_below_10(frequencies)
         averages.append(average)
-        # frequencies_count = len(frequencies)
-        # segments = segment_speech_audio(frequencies)
-        # print()
     f0 = np.mean(averages)
     return f0
     print(f0)
 
 
+def calculate_semitone_shift(f0_a, f0_b):
+    """
+    Parameters:
+    - f0_a: The original frequency.
+    - f0_b: The target frequency.
+    """
+
+    n = 12 * math.log2(f0_b / f0_a)
+    return round(n)
+
+
 def main():
     female_f0 = compute_f0(FEMALE_OUTPUT_DIR)
     male_f0 = compute_f0(MALE_OUTPUT_DIR)
+
+    pitch_shift = calculate_semitone_shift(female_f0, male_f0)
     print()
 
 
