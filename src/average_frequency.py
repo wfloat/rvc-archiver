@@ -101,14 +101,32 @@ FEMALE_OUTPUT_DIR = "frequency/ava"
 MALE_OUTPUT_DIR = "frequency/andrew"
 
 
-def main():
-    input_dir = MALE_OUTPUT_DIR
+def average_excluding_below_10(arr):
+    filtered_arr = arr[arr >= 10]  # Exclude elements below 10
+    if filtered_arr.size == 0:
+        return None  # Return None if no elements are >= 10
+    return np.mean(filtered_arr)
+
+
+def compute_f0(input_dir: str):
     f0_files = [file for file in os.listdir(input_dir) if file.endswith(".txt")]
+    averages = []
     for file in f0_files:
         frequencies = read_file_to_numpy_array(f"{input_dir}/{file}")
-        frequencies_count = len(frequencies)
-        segments = segment_speech_audio(frequencies)
-        print()
+        average = average_excluding_below_10(frequencies)
+        averages.append(average)
+        # frequencies_count = len(frequencies)
+        # segments = segment_speech_audio(frequencies)
+        # print()
+    f0 = np.mean(averages)
+    return f0
+    print(f0)
+
+
+def main():
+    female_f0 = compute_f0(FEMALE_OUTPUT_DIR)
+    male_f0 = compute_f0(MALE_OUTPUT_DIR)
+    print()
 
 
 if __name__ == "__main__":
